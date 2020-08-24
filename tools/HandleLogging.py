@@ -5,6 +5,8 @@ from functools import wraps
 import logbook
 from logbook.more import ColorizedStderrHandler
 
+__author__ = "Joe"
+
 check_path = '.'
 
 LOG_DIR = os.path.join(check_path, 'logs')
@@ -40,6 +42,3 @@ def logger(param):
             return function(*args, **kwargs)
         return _wrap
     return wrap
-
-if __name__ == '__main__':
-    print(LOG_DIR)
