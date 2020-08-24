@@ -10,7 +10,9 @@ __author__ = "Joe"
 check_path = '.'
 
 LOG_DIR = os.path.join(check_path, 'logs')
+
 file_stream = False
+
 if not os.path.exists(LOG_DIR):
     os.makedirs(LOG_DIR)
     file_stream = True

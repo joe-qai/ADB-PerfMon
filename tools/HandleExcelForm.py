@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
 
+import os
+
 import xlsxwriter
 
 from tools.HandleLogging import logger, LOG
+
 
 __author__ = "Joe"
 
@@ -10,7 +13,8 @@ __author__ = "Joe"
 @logger('保存启动时间d测试结果')
 def start_app(times, start):
     try:
-        workbook = xlsxwriter.Workbook('app_start_time.xlsx')
+        workbook = xlsxwriter.Workbook(
+            os.path.abspath(os.path.dirname(__file__)) + '/xlsxReports/app_start_time.xlsx')
         worksheet = workbook.add_worksheet('time')
         bold = workbook.add_format({'bold': 1})
         headings = ['启动次数', '启动时间']
@@ -39,7 +43,8 @@ def start_app(times, start):
 @logger('保存cpu，流量，内存')
 def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
     try:
-        workbook = xlsxwriter.Workbook('cpu_netflow_men_report.xlsx')
+        workbook = xlsxwriter.Workbook(
+            os.path.dirname(__file__) + '/xlsxReports/cpu_netflow_men_report.xlsx')
         worksheet = workbook.add_worksheet('cpu')
         worksheet_netflow = workbook.add_worksheet('netflow')
         worksheet_men = workbook.add_worksheet('men')

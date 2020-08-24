@@ -12,7 +12,7 @@ from tools.HandleLogging import LOG, logger
 
 
 # 设置截图保存目录
-check_path = '.'
+check_path = os.path.dirname(__file__)
 ScreenShot_DIR = os.path.join(check_path, 'ScreenShot')
 
 
@@ -363,7 +363,8 @@ if __name__ == '__main__':
                 row=18, column=3)
             log_path = tkinter.Text(root, height=1, width=30)
             log_path.grid(row=18, column=4)
-            log_path.insert('0.0', 'D:\\monekey.txt')
+            log_path.insert(
+                '0.0', os.path.abspath(os.path.dirname(__file__)) + '/logs/monekey.txt')
 
             btn_monkey = tkinter.Button(
                 root, text='启动Monkey测试', font=("黑体", 15, "bold"), command=monkey_app)
