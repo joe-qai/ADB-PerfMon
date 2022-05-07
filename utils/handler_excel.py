@@ -4,17 +4,17 @@ import os
 
 import xlsxwriter
 
-from tools.HandleLogging import logger, LOG
+from adb.configpath import REPORTDIR
+from utils.logger import logger, LOG
 
 
-__author__ = "Joe"
+__author__ = "joe-tester"
 
-
+        
 @logger('保存启动时间d测试结果')
 def start_app(times, start):
     try:
-        workbook = xlsxwriter.Workbook(
-            os.path.abspath(os.path.dirname(__file__)) + '/xlsxReports/app_start_time.xlsx')
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , '/app_start_time.xlsx'))
         worksheet = workbook.add_worksheet('time')
         bold = workbook.add_format({'bold': 1})
         headings = ['启动次数', '启动时间']
@@ -43,29 +43,32 @@ def start_app(times, start):
 @logger('保存cpu，流量，内存')
 def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
     try:
-        workbook = xlsxwriter.Workbook(
-            os.path.dirname(__file__) + '/xlsxReports/cpu_netflow_men_report.xlsx')
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , 'cpu_netflow_men_report.xlsx'))
         worksheet = workbook.add_worksheet('cpu')
         worksheet_netflow = workbook.add_worksheet('netflow')
         worksheet_men = workbook.add_worksheet('men')
         bold = workbook.add_format({'bold': 1})
-        headings = ['次数', 'cpu占用率']
+        headings = ['次数', 'cpu占用率(单位:G)']
         headings_netflow = ['次数', '上传流量', '下载流量', '总计']
         headings_men = ['次数', 'Pass占百分比']
         data_cpu = [times, start_cpu]
         data_netflow = [times, recv_list, send_list, total_list]
         data_men = [times, Pass_list]
+        
         worksheet_netflow.write_row('A1', headings_netflow, bold)
         worksheet_netflow.write_column('A2', data_netflow[0])
         worksheet_netflow.write_column('B2', data_netflow[2])
         worksheet_netflow.write_column('C2', data_netflow[1])
         worksheet_netflow.write_column('D2', data_netflow[3])
+        
         worksheet_men.write_row('A1', headings_men, bold)
         worksheet_men.write_column('A2', data_men[0])
         worksheet_men.write_column('B2', data_men[1])
+        
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', data_cpu[0])
         worksheet.write_column('B2', data_cpu[1])
+        
         chart1 = workbook.add_chart({'type': 'scatter',
                                      'subtype': 'straight_with_markers'})
         chart2 = workbook.add_chart({'type': 'scatter',
@@ -89,7 +92,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
             'values': '=cpu!$B$2:$B$%s' % (len(times) + 1),
         })
         chart2.add_series({
-            'name': '=netflow!$C$1',  # netflow
+            'name': '=netflow!$C$1',    # netflow
             'categories': '=netflow!$A$2:$A$%s' % (len(times)),
             'values': '=netflow!$C$2:$C$%s' % (len(times)),
         })

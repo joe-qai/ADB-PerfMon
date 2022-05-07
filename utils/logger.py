@@ -1,35 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import os
 from functools import wraps
+import os
+
 import logbook
 from logbook.more import ColorizedStderrHandler
 
-__author__ = "Joe"
-
-check_path = '.'
-
-LOG_DIR = os.path.join(check_path, 'logs')
-
-file_stream = False
-
-if not os.path.exists(LOG_DIR):
-    os.makedirs(LOG_DIR)
-    file_stream = True
+from adb.configpath import LOG_DIR
 
 
-def get_logger(name='monkey小工具各流程日志输出', file_log=file_stream, level=''):
+__author__ = "joe-tester"
+
+
+def get_logger(name='monkey小工具各流程日志输出', level="INFO"):
     """ get logger Factory function """
     logbook.set_datetime_format('local')
-
     ColorizedStderrHandler(bubble=False, level=level).push_thread()
     logbook.TimedRotatingFileHandler(
         os.path.join(LOG_DIR, '%s.log' % name),
         date_format='%Y-%m-%d-%H', bubble=True, encoding='utf-8').push_thread()
     return logbook.Logger(name)
 
-LOG = get_logger(file_log=file_stream, level='INFO')
-
+LOG = get_logger()
 
 def logger(param):
     """ fcuntion from logger meta """

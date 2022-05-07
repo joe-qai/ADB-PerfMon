@@ -1,5 +1,6 @@
-"""
 # -*- coding: utf-8 -*-
+
+"""
 python调用adb系统命令测试Android应用
 """
 
@@ -7,9 +8,9 @@ import os
 import subprocess
 
 from adb.checkpath import get_sys_env
-from tools.HandleLogging import logger
+from utils.logger import logger
 
-__author__ = "Joe"
+__author__ = "joe-tester"
 
 find = get_sys_env()
 
@@ -84,8 +85,7 @@ def get_netflow(packagename):
 @logger('获取cpu信息')
 def get_cpu_data(packagename):
     # 这里采集的cpu时候可以是执行操作采集 就是-n  -d 刷新间隔
-    cpu = 'adb shell top -n 1 | %s "%s"' % (find, packagename[:15])
-    # print(os.popen(cpu).read())
+    cpu = 'adb shell top -n 1 | %s "%s"' % (find, packagename)
     re_cpu = os.popen(cpu).read().split()[4]
     return re_cpu
 
@@ -93,7 +93,7 @@ def get_cpu_data(packagename):
 @logger('获取内存')
 def get_mem(packagename):
     # Total 的实际使用过物理内存
-    cpu = 'adb shell top -n 1| %s "%s"' % (find, packagename[:15])
+    cpu = 'adb shell top -n 1| %s "%s"' % (find, packagename)
     re_cpu = os.popen(cpu).read().split()[8]
     return re_cpu
 
@@ -129,9 +129,3 @@ def get_netflow1(package):
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # 用adb获取信息
     flo_snd = int(p1.stdout.read())
     return flo_snd, flo_rec
-
-
-if __name__ == '__main__':
-    # 	starttime_app_hot("com.chutzpah.yasibro","com.chutzpah.yasibro.main.view.MainActivity")
-    get_device_status()
-    app_force_stop("com.chutzpah.yasibro")

@@ -2,18 +2,14 @@
 import os
 import threading
 import time
-import tkinter
 from tkinter import messagebox, ttk
+import tkinter
 from tkinter.constants import END, LEFT
 
 from adb.ab_python import starttime_app, adb_monkey, get_device_status, get_cpu_data, get_netflow, get_mem
-from tools.HandleExcelForm import start_app, get_cpu
-from tools.HandleLogging import LOG, logger
-
-
-# 设置截图保存目录
-check_path = os.path.dirname(__file__)
-ScreenShot_DIR = os.path.join(check_path, 'ScreenShot')
+from adb.configpath import ScreenShot_DIR, BASEDIR
+from utils.handler_excel import start_app, get_cpu
+from utils.logger import LOG, logger
 
 
 @logger('启动app时间测试')
@@ -40,7 +36,6 @@ def StartAPP():
                 i = 0
                 e1['state'] = 'normal'
                 e1.delete(1.0, tkinter.END)
-                sum = 0
                 for i in range(int(get_times)):
                     start_time = starttime_app(
                         packagename=packname, packagenameactivicy=acti)
@@ -138,7 +133,7 @@ def cpu_app():
     if device_status == 'device':
         perf_pkname = perform_pkname.get('0.0', END).split()[0]
         xing = xing_t.get()
-        if len(perf_pkname) <= 5:
+        if len(perf_pkname) <= 5 or not perf_pkname.find("."):
             LOG.info('包名必须真实有效')
             messagebox.showwarning('警告', '请检查您的包名')
         times_list = []
@@ -153,14 +148,14 @@ def cpu_app():
             rescv, send, netflow_sum = get_netflow(perf_pkname)
             cpu = get_cpu_data(perf_pkname)
             neicun_t['state'] = 'normal'
-            pass_list.append(nen_cun)
+            pass_list.append(int(nen_cun)) # 保存数值
             neicun_t.insert(tkinter.END, ('Pass值：%s' % nen_cun))
             LOG.info('第%s次：Pass：%s' % (i, nen_cun))
             neicun_t.insert(tkinter.END, '\n')
             neicun_t.see(END)
             neicun_t['state'] = 'disabled'
             cpu_t['state'] = 'normal'
-            cpu_list.append(cpu.split('%')[0])
+            cpu_list.append(float(cpu[:-1]))# 不带单位
             cpu_t.insert(tkinter.END, ('CPU占有率：%s' % cpu))
             LOG.info('第{}次：CPU占用率%：{}'.format(i, cpu))
             cpu_t.insert(tkinter.END, '\n')
@@ -192,14 +187,14 @@ def cpu_app():
 
 @logger('采用线程来启动测试！采集cpu占用率,上传下载流量，内存')
 def teread():  # 如果不是ui界面，可以不用线程
-    for i in range(1):
+    for _ in range(1):
         t = threading.Thread(target=cpu_app, args=())
         t.start()
 
 
 @logger('启动app时间线程测试')
 def teread_start():  # 如果不用ui界面，可以不用线程
-    for i in range(1):
+    for _ in range(1):
         t = threading.Thread(target=StartAPP, args=())
         t.start()
 
@@ -229,7 +224,7 @@ if __name__ == '__main__':
             xing_t.grid(row=1, column=6)
             tkinter.Label(root, text='cpu:', justify=LEFT).grid(
                 row=1, column=1)
-            tkinter.Label(root, text='参数次数:', justify=LEFT).grid(
+            tkinter.Label(root, text='执行次数:', justify=LEFT).grid(
                 row=1, column=5)
             tkinter.Label(root, text='流量:', justify=LEFT).grid(row=2, column=4)
             tkinter.Label(root, text='内存:', justify=LEFT).grid(row=3, column=1)
@@ -237,7 +232,7 @@ if __name__ == '__main__':
                 row=0, column=1)
             perform_pkname = tkinter.Text(root, height=1, width=30)
             perform_pkname.grid(row=0, column=2)
-            perform_pkname.insert('0.0', "com.chutzpah.yasibro.test")
+            perform_pkname.insert('0.0', "请输入被测APP应用的包名")
             perform_btn = tkinter.Button(
                 root, text='执行性能测试', font=("黑体", 15, "bold"), command=teread)
             perform_btn.grid(row=0, column=3)
@@ -246,14 +241,13 @@ if __name__ == '__main__':
                 row=9, column=1)
             baoming_t = tkinter.Text(root, height=1, width=30)
             baoming_t.grid(row=9, column=2)
-            baoming_t.insert('0.0', "com.chutzpah.yasibro.test")
+            baoming_t.insert('0.0', "请输入被测APP应用的包名")
             tkinter.Label(root, text='测试包Activity:', justify=LEFT).grid(
                 row=9, column=3)
             activ_t = tkinter.Text(root, height=1, width=30)
             activ_t.grid(row=9, column=4)
-            activ_t.insert(
-                '0.0', "com.chutzpah.yasibro.main.view.MainActivity")
-            tkinter.Label(root, text='测试次数:').grid(row=9, column=5)
+            activ_t.insert('0.0', "请输入被测APP应用的主页面")
+            tkinter.Label(root, text='执行次数:').grid(row=9, column=5)
             num = [10, 20, 30, 50, 100]
             # state='readonly',只读不可手输
             times_act = ttk.Combobox(root, values=num, width=5)
@@ -276,7 +270,7 @@ if __name__ == '__main__':
             tkinter.Label(root, text='Monkey测试包名:', justify=LEFT).grid(
                 row=12, column=1)
             pkname = tkinter.Text(root, height=1, width=30)
-            pkname.insert('0.0', 'com.chutzpah.yasibro.test')
+            pkname.insert('0.0', '请输入被测APP应用的包名')
             pkname.grid(row=12, column=2)
 
             # 理解成次数
@@ -284,7 +278,7 @@ if __name__ == '__main__':
                 row=12, column=3)
             act_count = tkinter.Text(root, height=1, width=30)
             act_count.grid(row=12, column=4)
-            act_count.insert('0.0', 5000)
+            act_count.insert('0.0', 5)
 
             tkinter.Label(root, text='时间间隔:', justify=LEFT).grid(
                 row=12, column=5)
@@ -363,9 +357,7 @@ if __name__ == '__main__':
                 row=18, column=3)
             log_path = tkinter.Text(root, height=1, width=30)
             log_path.grid(row=18, column=4)
-            log_path.insert(
-                '0.0', os.path.abspath(os.path.dirname(__file__)) + '/logs/monekey.txt')
-
+            log_path.insert('0.0', os.path.join(BASEDIR[:3] ,'monekey.log'))
             btn_monkey = tkinter.Button(
                 root, text='启动Monkey测试', font=("黑体", 15, "bold"), command=monkey_app)
             btn_monkey.grid(row=11, column=3)

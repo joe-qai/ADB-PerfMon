@@ -3,10 +3,9 @@
 import platform
 import subprocess
 
-from tools.HandleLogging import logger
+from utils.logger import logger
 
-
-__author__ = "Joe"
+__author__ = "joe-tester"
 
 
 @logger('判断系统，使用相应的命令')
