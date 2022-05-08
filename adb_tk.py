@@ -170,9 +170,10 @@ def cpu_app():
             rescv_list.append(int(rescv))
             send_list.append(int(send))
             netflow_t.insert(
-                tkinter.END, ('总流量：%sk,上传流量:%sk,下载流量：%sk' % (netflow_sum/1024, rescv/1024, send/1024)))
+                tkinter.END, ('总流量：%sk,上传流量:%sk,下载流量：%sk' % (
+                round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2))))
             LOG.info('第%s次：总流量：%sk,上传流量:%sk,下载流量：%sk' %
-                     (i, netflow_sum/1024, rescv/1024, send/1024))
+                     (i, round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2)))
             netflow_t.insert(tkinter.END, '\n')
             netflow_t.see(END)
             netflow_t['state'] = 'disabled'
