@@ -11,7 +11,7 @@ from utils.logger import logger, LOG
 __author__ = "joe-tester"
 
         
-@logger('保存启动时间d测试结果')
+@logger('save time of start app')
 def start_app(times, start):
     try:
         workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , '/app_start_time.xlsx'))
@@ -35,12 +35,12 @@ def start_app(times, start):
         chart1.set_style(11)
         worksheet.insert_chart('D2', chart1, {'x_offset': 25, 'y_offset': 10})
         workbook.close()
-        LOG.info('保存启动时间成功')
+        LOG.info('save success!!!')
     except:
-        LOG.info('保存启动时间失败，原因:%s' % Exception)
+        LOG.info('save failed，because is: %s' % Exception)
 
 
-@logger('保存cpu，流量，内存')
+@logger('save cpuinfo meminfo netflow_info')
 def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
     try:
         workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , 'cpu_netflow_men_report.xlsx'))
@@ -48,27 +48,27 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
         worksheet_netflow = workbook.add_worksheet('netflow')
         worksheet_men = workbook.add_worksheet('men')
         bold = workbook.add_format({'bold': 1})
-        headings = ['次数', 'cpu占用率(单位:G)']
-        headings_netflow = ['次数', '上传流量', '下载流量', '总计']
-        headings_men = ['次数', 'Pass占百分比']
+        headings = ['监控次数', 'cpu占用率(单位:G)']
+        headings_netflow = ['监控次数', '上行流量', '下行流量', '流量总计']
+        headings_men = ['监控次数', 'Pass占百分比']
         data_cpu = [times, start_cpu]
         data_netflow = [times, recv_list, send_list, total_list]
         data_men = [times, Pass_list]
-        
+        # write netflow to excel
         worksheet_netflow.write_row('A1', headings_netflow, bold)
         worksheet_netflow.write_column('A2', data_netflow[0])
         worksheet_netflow.write_column('B2', data_netflow[2])
         worksheet_netflow.write_column('C2', data_netflow[1])
         worksheet_netflow.write_column('D2', data_netflow[3])
-        
+        # write meminfo to excel
         worksheet_men.write_row('A1', headings_men, bold)
         worksheet_men.write_column('A2', data_men[0])
         worksheet_men.write_column('B2', data_men[1])
-        
+        # write cpuinfo to excel
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', data_cpu[0])
         worksheet.write_column('B2', data_cpu[1])
-        
+        # Generate 2D map
         chart1 = workbook.add_chart({'type': 'scatter',
                                      'subtype': 'straight_with_markers'})
         chart2 = workbook.add_chart({'type': 'scatter',
@@ -119,6 +119,6 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
         chart1.set_style(11)
         worksheet.insert_chart('D2', chart1, {'x_offset': 60, 'y_offset': 60})
         workbook.close()
-        LOG.info('保存流量，内存等采集数据，成功')
+        LOG.info('Successfully saved collected data')
     except:
-        LOG.info('保存流量，内存等采集数据，失败:%s' % Exception)
+        LOG.info('Failed to save collected data: %s' % Exception)

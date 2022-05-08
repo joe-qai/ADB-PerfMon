@@ -8,26 +8,19 @@ from utils.logger import logger
 __author__ = "joe-tester"
 
 
-@logger('判断系统，使用相应的命令')
-def get_sys_env():  # 获取系统的名称，使用对应的指令
+@logger('Use the corresponding command according to the current system')
+def get_sys_env():
     system = platform.system()
-    if system == 'Windows':
-        find_manage = 'findstr'
-        # find_manage='grep'
-    else:
+    find_manage = 'findstr'
+    if system is not 'Windows':
         find_manage = 'grep'
     return find_manage
 
 
-@logger('获取设备列表')
-def get_device_list():  # 获取设备列表
-    devices = []
+@logger('get devices')
+def get_device_list():
     result = subprocess.Popen(
         "adb devices", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.readlines()
-    result.reverse()
-    for line in result[1:]:
-        if "attached" not in line.strip():
-            devices.append(line.split()[0])
-        else:
-            break
+    print(result)
+    devices = [line.split()[0].decode("utf-8") for line in result[1:-1]]
     return devices
