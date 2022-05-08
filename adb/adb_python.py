@@ -11,11 +11,14 @@ __author__ = "joe-tester"
 
 find = get_sys_env()
 
+
 @logger("Kill all processes")
 def app_force_stop(package_name):
     '''Stop app running'''
     cmd = 'adb shell am force-stop %s' % (package_name)
     os.system(cmd)
+
+
 # 	os.system(cmd) # The return value is the exit status code of the script. There will only be 0 (success), 1,2
 # 	os.popen(cmd) # Returns the output of the script execution as the return value
 # 	subprocess.call('adb shell am force-stop %s' %(package_name), shell=True)
@@ -53,6 +56,22 @@ def starttime_app_hot(packagename, packagenameactivicy):
     return me
 
 
+@logger('get cpuinfo')
+def get_cpu_data(packagename):
+    # Here is the parameter that can be taken when collecting CPU information, that is - N - D refresh interval
+    cpu = 'adb shell top -n 1 | %s "%s"' % (find, packagename)
+    re_cpu = os.popen(cpu).read().split()[4]
+    return re_cpu
+
+
+@logger('get meminfo')
+def get_mem(packagename):
+    # Physical memory actually used
+    cpu = 'adb shell top -n 1| %s "%s"' % (find, packagename)
+    re_cpu = os.popen(cpu).read().split()[4]
+    return re_cpu
+
+
 @logger('Get traffic')
 def get_netflow(packagename):
     """There is no silver here"""
@@ -78,7 +97,7 @@ def get_netflow(packagename):
 def get_netflow1(package):
     '''get total netflow; but mobilePhone not has uid_stat dir'''
     cmd = 'adb shell dumpsys package  "%s" | findstr "userId"' % (package)
-    uid = os.popen(cmd).read().split('=')[1].strip() # get application's userId
+    uid = os.popen(cmd).read().split('=')[1].strip()  # get application's userId
     # Get download traffic
     c = 'adb shell cat /proc/uid_stat/%s/tcp_rcv' % uid
     p1 = subprocess.Popen(c, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -86,40 +105,31 @@ def get_netflow1(package):
     flo_rec = float(p1.stdout.read())
     # Get upload traffic
     d = 'adb shell cat /proc/uid_stat/%s/tcp_snd' % uid
-    p1 = subprocess.Popen(d,stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p1 = subprocess.Popen(d, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     flo_snd = float(p1.stdout.read())
-    netflow_t = flo_rec + flo_snd # download plus upload is total traffic
-    return flo_snd, flo_rec , netflow_t
+    netflow_t = flo_rec + flo_snd  # download plus upload is total traffic
+    return flo_snd, flo_rec, netflow_t
 
 
 @logger('Get traffic3')
-def get_netflow2(package):
+def get_netflow2(package,wlan="wlan0"):
     """A new method for calculating flow"""
+    c = 'adb shell top -n 1 |findstr %s' %package
+    pid = os.popen(c).read().split()[0].strip()
+    c2 = 'adb shell cat /proc/%s/net/dev |findstr %s' %(pid,wlan)
+    netflow = os.popen(c2).read().split()
+    print(len(netflow))
     pass
 
 
-@logger('get cpuinfo')
-def get_cpu_data(packagename):
-    # Here is the parameter that can be taken when collecting CPU information, that is - N - D refresh interval
-    cpu = 'adb shell top -n 1 | %s "%s"' % (find, packagename)
-    re_cpu = os.popen(cpu).read().split()[4]
-    return re_cpu
-
-
-@logger('get meminfo')
-def get_mem(packagename):
-    # Physical memory actually used
-    cpu = 'adb shell top -n 1| %s "%s"' % (find, packagename)
-    re_cpu = os.popen(cpu).read().split()[8]
-    return re_cpu
-
-
 @logger('Execute monkey test')
-def adb_monkey(pkname, s_num, throttle, pct_touch, pct_motion, pct_trackball, pct_nav, pct_majornav, pct_syskeys, pct_appswitch, pct_flip, pct_anyevent, times, logfilepath):
+def adb_monkey(pkname, s_num, throttle, pct_touch, pct_motion, pct_trackball, pct_nav, pct_majornav, pct_syskeys,
+               pct_appswitch, pct_flip, pct_anyevent, times, logfilepath):
     """adb shell monkey -p {0} -s {1} --throttle {2} --pct-touch {3} --pct-motion {4} --pct-trackball  {5}  --pct-nav {6}  
     --pct-majornav {7} --pct-syskeys {8} --pct-appswitch {9}  --pct-flip  {10}  --pct-anyevent {11} -v -v -v {12} >{13}"""
     cmden = 'adb shell monkey -p {0} -s {1} --throttle {2} --pct-touch {3} --pct-motion {4} --pct-trackball  {5}  --pct-nav {6} --pct-majornav {7} --pct-syskeys {8} --pct-appswitch {9}  --pct-flip  {10}  --pct-anyevent {11} -v -v -v {12} >{13}'.format(
-        pkname, s_num, throttle, pct_touch, pct_motion, pct_trackball, pct_nav, pct_majornav, pct_syskeys, pct_appswitch, pct_flip, pct_anyevent, times, logfilepath)
+        pkname, s_num, throttle, pct_touch, pct_motion, pct_trackball, pct_nav, pct_majornav, pct_syskeys,
+        pct_appswitch, pct_flip, pct_anyevent, times, logfilepath)
     os.popen(cmden)
 
 
@@ -128,3 +138,8 @@ def get_device_status():
     cmd1 = 'adb get-state'
     devices_status = os.popen(cmd1).read().split()[0]
     return devices_status
+
+if __name__ == '__main__':
+    # ['face', '|bytes', 'packets', 'errs', 'drop', 'fifo', 'frame', 'compressed', 'multicast|bytes', 'packets', 'errs', 'drop', 'fifo', 'colls', 'carrier', 'compressed']
+    # ['wlan0:', '190812', '714', '0', '0', '0', '0', '0', '0', '92760', '1240', '0', '0', '0', '0', '0', '0']
+    get_netflow2("com.hcp.flaget",wlan="bytes")
