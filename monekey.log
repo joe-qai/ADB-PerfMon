@@ -1,4 +1,4 @@
-  bash arg: -p
+ bash arg: -p
   bash arg: com.hcp.flaget
   bash arg: -s
   bash arg: 5555

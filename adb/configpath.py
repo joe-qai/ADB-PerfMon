@@ -23,4 +23,4 @@ if not os.path.exists(REPORTDIR):
     os.makedirs(REPORTDIR)
 
 if __name__ == '__main__':
-    print(os.path.join(REPORTDIR, 'cpu_netflow_men_report.xlsx'))
+    print(BASEDIR)

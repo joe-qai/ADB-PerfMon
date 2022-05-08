@@ -40,6 +40,7 @@ def get_logger(name='adb_monkey_log', fileLogFlag=True, stdOutFlag=False, level=
         logger.handlers.append(logStd)
     return logger
 
+
 LOG = get_logger()
 
 
@@ -60,7 +61,3 @@ def logger(param):
         return _wrap
 
     return wrap
-
-
-if __name__ == '__main__':
-    LOG.info("ddddddddddd")

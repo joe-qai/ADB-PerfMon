@@ -6,7 +6,8 @@ from tkinter import messagebox, ttk
 import tkinter
 from tkinter.constants import END, LEFT
 
-from adb.ab_python import starttime_app, adb_monkey, get_device_status, get_cpu_data, get_netflow, get_mem
+from adb.adb_python import starttime_app, adb_monkey, get_device_status, get_cpu_data, get_mem, \
+    get_netflow1
 from adb.configpath import ScreenShot_DIR, BASEDIR
 from utils.handler_excel import start_app, get_cpu
 from utils.logger import LOG, logger
@@ -43,7 +44,7 @@ def StartAPP():
 
                     times.append(i)
                     if start_time is None:
-                        messagebox.showwarning('warning',
+                        messagebox.showwarning('Warning',
                                                'Please check the package name you entered or the activity of the package')
                         break
                     text = '第%s次启动时间：%s' % (i + 1, start_time[1])
@@ -149,10 +150,10 @@ def cpu_app():
         i = 0
         for i in range(int(xing)):
             nen_cun = get_mem(perf_pkname)
-            rescv, send, netflow_sum = get_netflow(perf_pkname)
+            rescv, send, netflow_sum = get_netflow1(perf_pkname)
             cpu = get_cpu_data(perf_pkname)
             neicun_t['state'] = 'normal'
-            pass_list.append(int(nen_cun))
+            pass_list.append(float(nen_cun))
             neicun_t.insert(tkinter.END, ('Pass值：%s' % nen_cun))
             LOG.info('第%s次：Pass：%s' % (i, nen_cun))
             neicun_t.insert(tkinter.END, '\n')
@@ -171,7 +172,7 @@ def cpu_app():
             send_list.append(int(send))
             netflow_t.insert(
                 tkinter.END, ('总流量：%sk,上传流量:%sk,下载流量：%sk' % (
-                round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2))))
+                    round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2))))
             LOG.info('第%s次：总流量：%sk,上传流量:%sk,下载流量：%sk' %
                      (i, round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2)))
             netflow_t.insert(tkinter.END, '\n')
