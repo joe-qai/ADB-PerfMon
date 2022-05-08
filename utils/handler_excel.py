@@ -7,14 +7,13 @@ import xlsxwriter
 from adb.configpath import REPORTDIR
 from utils.logger import logger, LOG
 
-
 __author__ = "joe-tester"
 
-        
+
 @logger('save time of start app')
 def start_app(times, start):
     try:
-        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , '/app_start_time.xlsx'))
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR, '/app_start_time.xlsx'))
         worksheet = workbook.add_worksheet('time')
         bold = workbook.add_format({'bold': 1})
         headings = ['启动次数', '启动时间']
@@ -43,7 +42,7 @@ def start_app(times, start):
 @logger('save cpuinfo meminfo netflow_info')
 def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
     try:
-        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR , 'cpu_netflow_men_report.xlsx'))
+        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR, 'cpu_netflow_men_report.xlsx'))
         worksheet = workbook.add_worksheet('cpu')
         worksheet_netflow = workbook.add_worksheet('netflow')
         worksheet_men = workbook.add_worksheet('men')
@@ -92,14 +91,14 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, Pass_list):
             'values': '=cpu!$B$2:$B$%s' % (len(times) + 1),
         })
         chart2.add_series({
-            'name': '=netflow!$C$1',    # netflow
-            'categories': '=netflow!$A$2:$A$%s' % (len(times)),
-            'values': '=netflow!$C$2:$C$%s' % (len(times)),
+            'name': '=netflow!$C$1',  # netflow
+            'categories': '=netflow!$A$2:$A$%s' % (len(times) + 1),
+            'values': '=netflow!$C$2:$C$%s' % (len(times) + 1),
         })
         chart2.add_series({
             'name': '=netflow!$D$1',
-            'categories': '=netflow!$A$2:$A$%s' % (len(times)),
-            'values': '=netflow!$D$2:$D$%s' % (len(times)),
+            'categories': '=netflow!$A$2:$A$%s' % (len(times) + 1),
+            'values': '=netflow!$D$2:$D$%s' % (len(times) + 1),
         })
         chart2.set_title({'name': '流量统计图'})
         chart2.set_x_axis({'name': '次数'})
