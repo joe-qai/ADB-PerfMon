@@ -6,8 +6,8 @@ from tkinter import messagebox, ttk
 import tkinter
 from tkinter.constants import END, LEFT
 
-from adb.adb_python import starttime_app, adb_monkey, get_device_status, get_cpu_data, get_mem, \
-    get_netflow1
+from adb.adb_python import starttime_app, adb_monkey, get_device_status, get_netflow, get_cpu_mem, \
+    get_battery
 from adb.configpath import ScreenShot_DIR, BASEDIR
 from utils.handler_excel import start_app, get_cpu
 from utils.logger import LOG, logger
@@ -20,7 +20,7 @@ def StartAPP():
     status_shebei = get_device_status()
     if status_shebei == 'device':
         try:
-            packname = baoming_t.get('0.0', END).strip()
+            packname = packagName.get('0.0', END).strip()
             acti = activ_t.get('0.0', END).strip()
             get_times = times_act.get()
         except:
@@ -136,9 +136,9 @@ def ScreenShot():
 def cpu_app():
     device_status = get_device_status()
     if device_status == 'device':
-        perf_pkname = perform_pkname.get('0.0', END).split()[0]
-        xing = xing_t.get()
-        if len(perf_pkname) <= 5 or not perf_pkname.find("."):
+        packagename = package_name.get('0.0', END).split()[0]
+        count = time_c.get()
+        if len(packagename) <= 5 or not packagename.find("."):
             LOG.info('The package name must be true and valid!!!')
             messagebox.showwarning('Warning', 'The package name must be true and valid!!!')
         times_list = []
@@ -146,43 +146,59 @@ def cpu_app():
         rescv_list = []
         send_list = []
         total_list = []
-        pass_list = []
+        mem_list = []
+        batt_list = []
         i = 0
-        for i in range(int(xing)):
-            nen_cun = get_mem(perf_pkname)
-            rescv, send, netflow_sum = get_netflow1(perf_pkname)
-            cpu = get_cpu_data(perf_pkname)
-            neicun_t['state'] = 'normal'
-            pass_list.append(float(nen_cun))
-            neicun_t.insert(tkinter.END, ('Pass值：%s' % nen_cun))
-            LOG.info('第%s次：Pass：%s' % (i, nen_cun))
-            neicun_t.insert(tkinter.END, '\n')
-            neicun_t.see(END)
-            neicun_t['state'] = 'disabled'
-            cpu_t['state'] = 'normal'
-            cpu_list.append(float(cpu[:-1]))  # 不带单位
-            cpu_t.insert(tkinter.END, ('CPU占有率：%s' % cpu))
-            LOG.info('第{}次：CPU占用率%：{}'.format(i, cpu))
-            cpu_t.insert(tkinter.END, '\n')
-            cpu_t.see(END)
-            cpu_t['state'] = 'disabled'
-            netflow_t['state'] = 'normal'
+        for i in range(int(count)):
+            # netflow
+            rescv, send, netflow_sum = get_netflow(packagename)
+            # cpu and mem
+            cpu_p, mem_p = get_cpu_mem(packagename)
+            # batt
+            batt = get_battery()
+            
+            mem_list.append(float(mem_p))
+            cpu_list.append(float(cpu_p))
+            batt_list.append(float(batt))
+            
             total_list.append(int(netflow_sum))
             rescv_list.append(int(rescv))
             send_list.append(int(send))
-            netflow_t.insert(
-                tkinter.END, ('总流量：%sk,上传流量:%sk,下载流量：%sk' % (
-                    round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2))))
-            LOG.info('第%s次：总流量：%sk,上传流量:%sk,下载流量：%sk' %
-                     (i, round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2)))
+            
+            mem_t['state'] = 'normal'
+            mem_t.insert(tkinter.END, ('Pass值：{}%'.format(mem_p)))
+            LOG.info('第{}次：Pass：{}%'.format(i, mem_p))
+            mem_t.insert(tkinter.END, '\n')
+            mem_t.see(END)
+            mem_t['state'] = 'disabled'
+            
+            cpu_t['state'] = 'normal'
+            cpu_t.insert(tkinter.END, ('CPU占有率：{}% '.format(cpu_p)))
+            LOG.info('第{}次：CPU占用率%：{}'.format(i, cpu_p))
+            cpu_t.insert(tkinter.END, '\n')
+            cpu_t.see(END)
+            cpu_t['state'] = 'disabled'
+            
+            q_of_electr['state'] = 'normal'
+            q_of_electr.insert(tkinter.END, "当前电量百分比:{}%".format(batt))
+            LOG.info("第{}次，耗电百分比：{}%".format(i,batt))
+            q_of_electr.insert(tkinter.END, '\n')
+            q_of_electr['state'] = 'disabled'
+            
+            netflow_t['state'] = 'normal'
+            netflow_t.insert(tkinter.END, ('总流量：%sk,上传流量:%sk,下载流量：%sk' % (round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2))))
+            LOG.info('第%s次：总流量：%sk,上传流量:%sk,下载流量：%sk' %(i, round(netflow_sum / 1024, 2), round(rescv / 1024, 2), round(send / 1024, 2)))
             netflow_t.insert(tkinter.END, '\n')
             netflow_t.see(END)
             netflow_t['state'] = 'disabled'
+            
             perform_btn['state'] = 'disabled'
+            
             i += 1
+            
             times_list.append(int(i))
-        get_cpu(times=times_list, start_cpu=cpu_list, recv_list=rescv_list,
-                send_list=send_list, total_list=total_list, Pass_list=pass_list)
+            
+        get_cpu(times=times_list, start_cpu=cpu_list, recv_list=rescv_list,send_list=send_list, total_list=total_list, mem_list=mem_list,batt_list=batt_list)
         perform_btn['state'] = 'normal'
         LOG.info('Test complete!!!')
         messagebox.showinfo('toast', 'The test is completed and the test report has been generated!')
@@ -210,168 +226,157 @@ def teread_start():
 if __name__ == '__main__':
     LOG.info('Test applet starts! Test on!')
     try:
-        status_shebei = get_device_status()
-        if status_shebei == 'device':
+        device_status = get_device_status()
+        if device_status == 'device':
+            # init tk panel
             root = tkinter.Tk()
             root.title('Android ADB Testing Tools')
-            root.geometry("950x600")
+            root.geometry("920x600")
             root.resizable(width=False, height=False)
-            tkinter.Label(root, text='性能参数展示', fg='red', font=("黑体", 15, "bold"), ).grid(
-                row=1, column=3)
+            
+            # performance testing
+            perform_btn = tkinter.Button(root, text='执行性能测试', font=("黑体", 15, "bold"), command=teread)
+            perform_btn.grid(row=0, column=3)
+            
+            tkinter.Label(root, text='<性能参数展示>', fg='red', font=("黑体", 15, "bold"),).grid(row=2, column=3)
+            package_name = tkinter.Text(root, height=1, width=30)
+            package_name.grid(row=0, column=2)
+            package_name.insert('0.0', "请输入被测APP应用的包名")
+            
             cpu_t = tkinter.Text(root, height=5, width=30)
             cpu_t.grid(row=1, column=2)
+            
             netflow_t = tkinter.Text(root, height=5, width=30)
-            netflow_t.grid(row=1, column=4)
             netflow_t.see(END)
-            neicun_t = tkinter.Text(root, height=5, width=30)
-            neicun_t.grid(row=3, column=2)
-            neicun_t.see(END)
-            suji_ev = [50, 100, 150, 200, 300]
-            xing_t = ttk.Combobox(root, values=suji_ev, width=5)
-            xing_t.current(0)
-            xing_t.grid(row=1, column=6)
-            tkinter.Label(root, text='cpu:', justify=LEFT).grid(
-                row=1, column=1)
-            tkinter.Label(root, text='执行次数:', justify=LEFT).grid(
-                row=1, column=5)
-            tkinter.Label(root, text='流量:', justify=LEFT).grid(row=2, column=4)
+            netflow_t.grid(row=1, column=4)
+            
+            mem_t = tkinter.Text(root, height=5, width=30)
+            mem_t.see(END)
+            mem_t.grid(row=3, column=2)
+            # battery level
+            q_of_electr = tkinter.Text(root, height=5, width=30)
+            q_of_electr.see(END)
+            q_of_electr.grid(row=3, column=4)
+            
+            
+            # counts
+            times = [60, 180, 300, 600]
+            time_c = ttk.Combobox(root, values=times, width=5)
+            time_c.current(0)
+            time_c.grid(row=1, column=6)
+            
+            tkinter.Label(root, text='cpu:', justify=LEFT).grid(row=1, column=1)
+            tkinter.Label(root, text='执行时间(s):', justify=LEFT).grid(row=1, column=5)
+            tkinter.Label(root, text='流量:', justify=LEFT).grid(row=1, column=3)
             tkinter.Label(root, text='内存:', justify=LEFT).grid(row=3, column=1)
-            tkinter.Label(root, text='性能测试包名:', justify=LEFT).grid(
-                row=0, column=1)
-            perform_pkname = tkinter.Text(root, height=1, width=30)
-            perform_pkname.grid(row=0, column=2)
-            perform_pkname.insert('0.0', "请输入被测APP应用的包名")
-            perform_btn = tkinter.Button(
-                root, text='执行性能测试', font=("黑体", 15, "bold"), command=teread)
-            perform_btn.grid(row=0, column=3)
-            # 			tkinter.Label(root,text='启动时间测试',fg='red',height=2,font=("黑体", 15, "bold")).grid(row=8,column=3)
-            tkinter.Label(root, text='启动测试包名:', justify=LEFT).grid(
-                row=9, column=1)
-            baoming_t = tkinter.Text(root, height=1, width=30)
-            baoming_t.grid(row=9, column=2)
-            baoming_t.insert('0.0', "请输入被测APP应用的包名")
-            tkinter.Label(root, text='测试包Activity:', justify=LEFT).grid(
-                row=9, column=3)
+            tkinter.Label(root, text='电量:', justify=LEFT).grid(row=3, column=3)
+            tkinter.Label(root, text='性能测试包名:', justify=LEFT).grid(row=0, column=1)
+            
+            # Start APP Testing
+            btn_start = tkinter.Button(root, text='启动时间测试', font=("黑体", 15, "bold"), command=teread_start).grid(row=9, column=3)
+            tkinter.Label(root, text='启动时间展示:', justify=LEFT).grid(row=11, column=1)
+            e1 = tkinter.Text(root, width=30, height=5, state="disabled").grid(row=11, column=2, padx=20, pady=30)
+            
+            tkinter.Label(root, text='启动测试包名:', justify=LEFT).grid(row=10, column=1)
+            packagName = tkinter.Text(root, height=1, width=30)
+            packagName.grid(row=10, column=2)
+            packagName.insert('0.0', "请输入被测APP应用的包名")
+            
+            tkinter.Label(root, text='测试包Activity:', justify=LEFT).grid(row=10, column=3)
             activ_t = tkinter.Text(root, height=1, width=30)
-            activ_t.grid(row=9, column=4)
+            activ_t.grid(row=10, column=4)
             activ_t.insert('0.0', "请输入被测APP应用的主页面")
-            tkinter.Label(root, text='执行次数:').grid(row=9, column=5)
+            
             num = [10, 20, 30, 50, 100]
-            # state='readonly',只读不可手输
+            # state='readonly'
+            tkinter.Label(root, text='执行次数:').grid(row=10, column=5)
             times_act = ttk.Combobox(root, values=num, width=5)
             times_act.current(0)
-            times_act.grid(row=9, column=6)
-
-            tkinter.Label(root, text='启动时间展示:', justify=LEFT).grid(
-                row=10, column=1)
-            e1 = tkinter.Text(root, width=30, height=5, state="disabled")
-            e1.grid(row=10, column=2, padx=20, pady=30)
-
-            screenshot_btn = tkinter.Button(root, text='截图', width=8, height=3, font=(
-                "黑体", 16, "bold"), fg='red', command=ScreenShot)
-            screenshot_btn.grid(row=10, column=4)
-
-            btn_start = tkinter.Button(
-                root, text='启动时间测试', font=("黑体", 15, "bold"), command=teread_start)
-            btn_start.grid(row=8, column=3)
-            # 			tkinter.Label(root,text='Monkey测试',fg='red',font=("黑体", 15, "bold")).grid(row=11,column=4)
-            tkinter.Label(root, text='Monkey测试包名:', justify=LEFT).grid(
-                row=12, column=1)
+            times_act.grid(row=10, column=6)
+            
+            # screenshot
+            screenshot_btn = tkinter.Button(root, text='截图', width=8, height=3, font=("黑体", 16, "bold"), fg='red', command=ScreenShot).grid(row=11, column=4)
+            
+            # Monkey Testing
+            btn_monkey = tkinter.Button(root, text='启动Monkey测试', font=("黑体", 15, "bold"), command=monkey_app).grid(row=12, column=3)
+            tkinter.Label(root, text='Monkey测试包名:', justify=LEFT).grid(row=13, column=1)
             pkname = tkinter.Text(root, height=1, width=30)
+            pkname.grid(row=13, column=2)
             pkname.insert('0.0', '请输入被测APP应用的包名')
-            pkname.grid(row=12, column=2)
-
-            # 理解成次数
-            tkinter.Label(root, text='执行次数:', justify=LEFT).grid(
-                row=12, column=3)
+            
+            # times is counts
+            tkinter.Label(root, text='执行次数:', justify=LEFT).grid(row=13, column=3)
             act_count = tkinter.Text(root, height=1, width=30)
-            act_count.grid(row=12, column=4)
+            act_count.grid(row=13, column=4)
             act_count.insert('0.0', 5)
-
-            tkinter.Label(root, text='时间间隔:', justify=LEFT).grid(
-                row=12, column=5)
+            
+            tkinter.Label(root, text='执行频率(ms):', justify=LEFT).grid(row=13, column=5)
             random_event = [500, 1000, 1500, 2000, 3000]
             time_t = ttk.Combobox(root, values=random_event, width=5)
+            time_t.grid(row=13, column=6)
             time_t.current(0)
-            time_t.grid(row=12, column=6)
-
-            tkinter.Label(root, text='触发touch事件百分比:', justify=LEFT).grid(
-                row=18, column=1)
-            click_event = tkinter.Text(root, height=1, width=30)
-            click_event.grid(row=18, column=2)
-            click_event.insert('0.0', 15)
-
-            tkinter.Label(root, text='手势motion事件百分比:', justify=LEFT).grid(
-                row=15, column=1)
-            sliding_event = tkinter.Text(root, height=1, width=30)
-            sliding_event.grid(row=15, column=2)
-            sliding_event.insert('0.0', 10)
-
-            tkinter.Label(root, text='pinchzoom缩放事件百分比:', justify=LEFT).grid(
-                row=16, column=3)
-            zoom_event = tkinter.Text(root, height=1, width=30)
-            zoom_event.grid(row=16, column=4)
-            zoom_event.insert('0.0', 2)
-
-            tkinter.Label(root, text='轨迹球事件百分比:', justify=LEFT).grid(
-                row=14, column=3)
-            track_event = tkinter.Text(root, height=1, width=30)
-            track_event.grid(row=14, column=4)
-            track_event.insert('0.0', 15)
-
-            tkinter.Label(root, text='基本导航事件百分比:', justify=LEFT).grid(
-                row=14, column=1)
-            base_navigation_event = tkinter.Text(root, height=1, width=30)
-            base_navigation_event.insert('0.0', 30)
-            base_navigation_event.grid(row=14, column=2)
-
-            tkinter.Label(root, text='主要导航事件百分比:', justify=LEFT).grid(
-                row=13, column=1)
+            
+            tkinter.Label(root, text='主要导航事件百分比:', justify=LEFT).grid(row=14, column=1)
             main_navigation_event = tkinter.Text(root, height=1, width=30)
+            main_navigation_event.grid(row=14, column=2)
             main_navigation_event.insert('0.0', 15)
-            main_navigation_event.grid(row=13, column=2)
-
-            tkinter.Label(root, text='系统按键百分比:', justify=LEFT).grid(
-                row=16, column=1)
-            system_event = tkinter.Text(root, height=1, width=30)
-            system_event.grid(row=16, column=2)
-            system_event.insert('0.0', 2)
-
-            tkinter.Label(root, text='Activity启动事件百分比:', justify=LEFT).grid(
-                row=15, column=3)
-            activity_switch_event = tkinter.Text(root, height=1, width=30)
-            activity_switch_event.grid(row=15, column=4)
-            activity_switch_event.insert('0.0', 2)
-
-            tkinter.Label(root, text='键盘唤出隐藏事件百分比:', justify=LEFT).grid(
-                row=13, column=3)
+            
+            tkinter.Label(root, text='键盘唤出隐藏事件百分比:', justify=LEFT).grid(row=14, column=3)
             keyboard_event = tkinter.Text(root, height=1, width=30)
-            keyboard_event.grid(row=13, column=4)
+            keyboard_event.grid(row=14, column=4)
             keyboard_event.insert('0.0', 1)
-
-            tkinter.Label(root, text='其他事件百分比:', justify=LEFT).grid(
-                row=17, column=3)
+            
+            tkinter.Label(root, text='轨迹球事件百分比:', justify=LEFT).grid(row=15, column=3)
+            track_event = tkinter.Text(root, height=1, width=30)
+            track_event.grid(row=15, column=4)
+            track_event.insert('0.0', 15)
+            tkinter.Label(root, text='基本导航事件百分比:', justify=LEFT).grid(row=15, column=1)
+            base_navigation_event = tkinter.Text(root, height=1, width=30)
+            base_navigation_event.grid(row=15, column=2)
+            base_navigation_event.insert('0.0', 30)
+            
+            tkinter.Label(root, text='Activity启动事件百分比:', justify=LEFT).grid(row=16, column=3)
+            activity_switch_event = tkinter.Text(root, height=1, width=30)
+            activity_switch_event.grid(row=16, column=4)
+            activity_switch_event.insert('0.0', 2)
+            
+            tkinter.Label(root, text='手势motion事件百分比:', justify=LEFT).grid(row=16, column=1)
+            sliding_event = tkinter.Text(root, height=1, width=30)
+            sliding_event.grid(row=16, column=2)
+            sliding_event.insert('0.0', 10)
+            
+            tkinter.Label(root, text='系统按键百分比:', justify=LEFT).grid(row=17, column=1)
+            system_event = tkinter.Text(root, height=1, width=30)
+            system_event.grid(row=17, column=2)
+            system_event.insert('0.0', 2)
+            
+            tkinter.Label(root, text='pinchzoom缩放事件百分比:', justify=LEFT).grid(row=17, column=3)
+            zoom_event = tkinter.Text(root, height=1, width=30)
+            zoom_event.grid(row=17, column=4)
+            zoom_event.insert('0.0', 2)
+            
+            tkinter.Label(root, text='其他事件百分比:', justify=LEFT).grid(row=18, column=3)
             other_event = tkinter.Text(root, height=1, width=30)
-            other_event.grid(row=17, column=4)
+            other_event.grid(row=18, column=4)
             other_event.insert('0.0', 8)
-
             # Number of seeds generated by pseudo-random,default：5555
-            tkinter.Label(root, text='伪随机数:').grid(row=17, column=1)
+            tkinter.Label(root, text='伪随机数:').grid(row=18, column=1)
             pseudorandom = tkinter.Text(root, height=1, width=30)
+            pseudorandom.grid(row=18, column=2)
             pseudorandom.insert('0.0', 5555)
-            pseudorandom.grid(row=17, column=2)
-
-            tkinter.Label(root, text='日志存放路径:', justify=LEFT).grid(
-                row=18, column=3)
+            
+            tkinter.Label(root, text='日志存放路径:', justify=LEFT).grid(row=19, column=3)
             log_path = tkinter.Text(root, height=1, width=30)
-            log_path.grid(row=18, column=4)
+            log_path.grid(row=19, column=4)
+            
+            tkinter.Label(root, text='触发touch事件百分比:', justify=LEFT).grid(row=19, column=1)
+            click_event = tkinter.Text(root, height=1, width=30)
+            click_event.grid(row=19, column=2)
+            click_event.insert('0.0', 15)
+            
             log_path.insert('0.0', os.path.join(BASEDIR[:3], 'monekey.log'))
-            btn_monkey = tkinter.Button(
-                root, text='启动Monkey测试', font=("黑体", 15, "bold"), command=monkey_app)
-            btn_monkey.grid(row=11, column=3)
             root.mainloop()
         else:
-            LOG(
-                'The device is not connected or the connection is abnormal! Current connection status: %s' % status_shebei)
+            LOG('The device is not connected or the connection is abnormal! Current connection status: %s' % device_status)
     except Exception as e:
         LOG.error('Test exception, cause：%s' % e)
