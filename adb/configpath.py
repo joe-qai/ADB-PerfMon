@@ -13,6 +13,9 @@ REPORTDIR = os.path.join(BASEDIR, "xlsxReports")
 LOG_DIR = os.path.join(BASEDIR, 'logs')
 ScreenShot_DIR = os.path.join(BASEDIR, "ScreenShot")
 
+CPU_MEM_PATH = os.path.join(REPORTDIR, 'cpu_netflow_mem_report.xlsx')
+TIME_PATH = os.path.join(REPORTDIR, 'app_start_time.xlsx')
+
 if not os.path.exists(ScreenShot_DIR):
     os.makedirs(ScreenShot_DIR)
 

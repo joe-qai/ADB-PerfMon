@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from collections import namedtuple
 import os
 
+from openpyxl.reader.excel import load_workbook
 import xlsxwriter
 
-from adb.configpath import REPORTDIR
+from adb.configpath import TIME_PATH, CPU_MEM_PATH
 from utils.logger import logger, LOG
+
 
 __author__ = "joe-tester"
 
@@ -13,7 +16,7 @@ __author__ = "joe-tester"
 @logger('save time of start app')
 def start_app(times, start):
     try:
-        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR, '/app_start_time.xlsx'))
+        workbook = xlsxwriter.Workbook(TIME_PATH)
         worksheet = workbook.add_worksheet('time')
         bold = workbook.add_format({'bold': 1})
         headings = ['启动次数', '启动时间']
@@ -40,27 +43,27 @@ def start_app(times, start):
 
 
 @logger('save cpuinfo meminfo netflow_info batt_info')
-def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_list):
+def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_list):
     try:
         # create workbook
-        workbook = xlsxwriter.Workbook(os.path.join(REPORTDIR, 'cpu_netflow_men_report.xlsx'))
+        workbook = xlsxwriter.Workbook(CPU_MEM_PATH)
         # create sheet
         worksheet = workbook.add_worksheet('cpu')
         worksheet_netflow = workbook.add_worksheet('netflow')
-        worksheet_men = workbook.add_worksheet('men')
+        worksheet_mem = workbook.add_worksheet('mem')
         worksheet_batt = workbook.add_worksheet('batt')
         # set style
         bold = workbook.add_format({'bold': 1})
         # header
         headings = ['监控次数', 'cpu占用率%']
         headings_netflow = ['监控次数', '上行流量', '下行流量', '流量总计']
-        headings_men = ['监控次数', 'Pass占百分比']
+        headings_mem = ['监控次数', 'Pass占百分比']
         headings_batt = ["监控次数", '耗电百分比']
         # datas
         data_cpu = [times, start_cpu]
         data_netflow = [times, recv_list, send_list, total_list]
-        data_men = [times, mem_list]
-        data_batt = [times,batt_list]
+        data_mem = [times, mem_list]
+        data_batt = [times, batt_list]
         # write cpuinfo to excel
         worksheet.write_row('A1', headings, bold)
         worksheet.write_column('A2', data_cpu[0])
@@ -76,9 +79,9 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_li
         worksheet_netflow.write_column('C2', data_netflow[1])
         worksheet_netflow.write_column('D2', data_netflow[3])
         # write meminfo to excel
-        worksheet_men.write_row('A1', headings_men, bold)
-        worksheet_men.write_column('A2', data_men[0])
-        worksheet_men.write_column('B2', data_men[1])
+        worksheet_mem.write_row('A1', headings_mem, bold)
+        worksheet_mem.write_column('A2', data_mem[0])
+        worksheet_mem.write_column('B2', data_mem[1])
         
         # Generate 2D map
         chart1 = workbook.add_chart({'type': 'scatter',
@@ -103,7 +106,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_li
 
         })
         chart2.add_series({
-            'name': '=netflow!$C$1',  # netflow
+            'name': '=netflow!$C$1',    # netflow
             'categories': '=netflow!$A$2:$A$%s' % (len(times) + 1),
             'values': '=netflow!$C$2:$C$%s' % (len(times) + 1),
         })
@@ -113,9 +116,9 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_li
             'values': '=netflow!$D$2:$D$%s' % (len(times) + 1),
         })
         chart3.add_series({
-            'name': '=men!$B$1',
-            'categories': '=men!$A$2:$A$%s' % (len(times) + 1),
-            'values': '=men!$B$2:$B$%s' % (len(times) + 1),
+            'name': '=mem!$B$1',
+            'categories': '=mem!$A$2:$A$%s' % (len(times) + 1),
+            'values': '=mem!$B$2:$B$%s' % (len(times) + 1),
         })
         chart4.add_series({
             'name': '=batt!$B$1',
@@ -143,7 +146,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_li
         chart4.set_y_axis({'name': '电量:%'})
         chart4.set_style(11)
         
-        worksheet_men.insert_chart('F2', chart3, {'x_offset': 60, 'y_offset': 60})
+        worksheet_mem.insert_chart('F2', chart3, {'x_offset': 60, 'y_offset': 60})
         worksheet_netflow.insert_chart('F2', chart2, {'x_offset': 60, 'y_offset': 60})
         worksheet.insert_chart('D2', chart1, {'x_offset': 60, 'y_offset': 60})
         worksheet_batt.insert_chart('D2', chart4, {'x_offset': 60, 'y_offset': 60})
@@ -152,3 +155,74 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list,batt_li
         LOG.info('Successfully saved collected data')
     except:
         LOG.info('Failed to save collected data: %s' % Exception)
+        
+        
+
+class HandleExcel(object):
+
+    def __init__(self, filename=CPU_MEM_PATH):
+        '''实例化文件属性，初始化操作文件对象'''
+        self.filename = filename
+        self.wb = load_workbook(self.filename)
+        # self.ws = self.wb[self.sheetname] if self.sheetname is not None else self.wb.active
+        # title
+        # self.sheet_head_tuple = tuple(self.ws.iter_rows(max_row=self.ws.min_row, values_only=True))[0]
+        self.times = 0
+        self.cpus = []
+        self.mems = []
+        self.netflows = []
+        self.uploads = []
+        self.downloads = []
+        self.batts = []
+        
+        # self.Cases = namedtuple("cases", self.sheet_head_tuple)
+
+    def get_cpus(self):
+        self.ws = self.wb["cpu"]
+        self.times = self.ws.max_row - 1
+        
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+            self.cpus.append(tuple_data[1])
+            # self.cases_list.append(self.Cases(*tuple_data))
+        return self.cpus
+    
+    def get_mems(self):
+        '''获取excel所有行的测试用例'''
+        self.ws = self.wb["mem"]
+        self.times = self.ws.max_row - 1
+        
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+            self.mems.append(tuple_data[1])
+            # self.cases_list.append(self.Cases(*tuple_data))
+        return self.cpus
+    
+    def get_netflows(self):
+        '''获取excel所有行的测试用例'''
+        self.ws = self.wb["netflow"]
+        self.times = self.ws.max_row - 1
+        
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+            self.netflows.append(tuple_data[3])
+            self.uploads.append(tuple_data[1])
+            self.downloads.append(tuple_data[2])
+            # self.cases_list.append(self.Cases(*tuple_data))
+        return self.cpus
+    
+    def get_batts(self):
+        '''获取excel所有行的测试用例'''
+        self.ws = self.wb["batt"]
+        self.times = self.ws.max_row - 1
+        
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+            self.batts.append(tuple_data[1])
+            # self.cases_list.append(self.Cases(*tuple_data))
+        return self.cpus
+    
+    
+if __name__ == '__main__':
+    excel = HandleExcel()
+    cpus = excel.get_cpus()
+    mems = excel.get_mems()
+    netflows = excel.get_netflows()
+    batts = excel.get_batts()
+    print(cpus,mems,netflows,batts)
