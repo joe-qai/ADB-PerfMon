@@ -174,55 +174,48 @@ class HandleExcel(object):
         self.uploads = []
         self.downloads = []
         self.batts = []
-        
         # self.Cases = namedtuple("cases", self.sheet_head_tuple)
 
     def get_cpus(self):
         self.ws = self.wb["cpu"]
         self.times = self.ws.max_row - 1
-        
         for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
             self.cpus.append(tuple_data[1])
             # self.cases_list.append(self.Cases(*tuple_data))
         return self.cpus
     
     def get_mems(self):
-        '''获取excel所有行的测试用例'''
         self.ws = self.wb["mem"]
         self.times = self.ws.max_row - 1
-        
         for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
             self.mems.append(tuple_data[1])
-            # self.cases_list.append(self.Cases(*tuple_data))
-        return self.cpus
+        return self.mems
     
     def get_netflows(self):
-        '''获取excel所有行的测试用例'''
         self.ws = self.wb["netflow"]
         self.times = self.ws.max_row - 1
-        
         for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
             self.netflows.append(tuple_data[3])
             self.uploads.append(tuple_data[1])
             self.downloads.append(tuple_data[2])
-            # self.cases_list.append(self.Cases(*tuple_data))
-        return self.cpus
+        return self.uploads,self.downloads,self.netflows
     
     def get_batts(self):
-        '''获取excel所有行的测试用例'''
         self.ws = self.wb["batt"]
         self.times = self.ws.max_row - 1
-        
         for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
             self.batts.append(tuple_data[1])
             # self.cases_list.append(self.Cases(*tuple_data))
-        return self.cpus
+        return self.batts
     
     
 if __name__ == '__main__':
     excel = HandleExcel()
     cpus = excel.get_cpus()
     mems = excel.get_mems()
-    netflows = excel.get_netflows()
+    upload,download,netflows = excel.get_netflows()
     batts = excel.get_batts()
-    print(cpus,mems,netflows,batts)
+    print(cpus)
+    print(mems)
+    print(netflows)
+    print(batts)
