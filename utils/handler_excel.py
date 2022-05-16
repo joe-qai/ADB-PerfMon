@@ -5,10 +5,11 @@ import os
 
 from openpyxl.reader.excel import load_workbook
 import xlsxwriter
-
-from adb.configpath import TIME_PATH, CPU_MEM_PATH
+import numpy as np
+from matplotlib import pyplot as plt
+import time
+from adb.configpath import TIME_PATH, CPU_MEM_PATH, ScreenShot_DIR
 from utils.logger import logger, LOG
-
 
 __author__ = "joe-tester"
 
@@ -82,7 +83,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
         worksheet_mem.write_row('A1', headings_mem, bold)
         worksheet_mem.write_column('A2', data_mem[0])
         worksheet_mem.write_column('B2', data_mem[1])
-        
+
         # Generate 2D map
         chart1 = workbook.add_chart({'type': 'scatter',
                                      'subtype': 'straight_with_markers'})
@@ -92,8 +93,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
                                      'subtype': 'straight_with_markers'})
         chart4 = workbook.add_chart({'type': 'scatter',
                                      'subtype': 'straight_with_markers'})
-        
-        
+
         chart1.add_series({
             'name': '=cpu!$B$1',
             'categories': '=cpu!$A$2:$A$%s' % (len(times) + 1),
@@ -106,7 +106,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
 
         })
         chart2.add_series({
-            'name': '=netflow!$C$1',    # netflow
+            'name': '=netflow!$C$1',  # netflow
             'categories': '=netflow!$A$2:$A$%s' % (len(times) + 1),
             'values': '=netflow!$C$2:$C$%s' % (len(times) + 1),
         })
@@ -125,43 +125,40 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
             'categories': '=batt!$A$2:$A$%s' % (len(times) + 1),
             'values': '=batt!$B$2:$B$%s' % (len(times) + 1),
         })
-        
+
         chart1.set_title({'name': '进程cpu占用率'})
         chart1.set_x_axis({'name': "次数"})
         chart1.set_y_axis({'name': '占用:%'})
         chart1.set_style(11)
-        
+
         chart2.set_title({'name': '流量统计曲线'})
         chart2.set_x_axis({'name': '次数'})
         chart2.set_y_axis({'name': '流量：k'})
         chart2.set_style(11)
-        
+
         chart3.set_title({'name': '进程mem占有率'})
         chart3.set_x_axis({'name': '次数'})
         chart3.set_y_axis({'name': 'pass值：%'})
         chart3.set_style(11)
-        
+
         chart4.set_title({'name': '手机剩余电量比'})
         chart4.set_x_axis({'name': "次数"})
         chart4.set_y_axis({'name': '电量:%'})
         chart4.set_style(11)
-        
+
         worksheet_mem.insert_chart('F2', chart3, {'x_offset': 60, 'y_offset': 60})
         worksheet_netflow.insert_chart('F2', chart2, {'x_offset': 60, 'y_offset': 60})
         worksheet.insert_chart('D2', chart1, {'x_offset': 60, 'y_offset': 60})
         worksheet_batt.insert_chart('D2', chart4, {'x_offset': 60, 'y_offset': 60})
-        
+
         workbook.close()
         LOG.info('Successfully saved collected data')
     except:
         LOG.info('Failed to save collected data: %s' % Exception)
-        
-        
+
 
 class HandleExcel(object):
-
     def __init__(self, filename=CPU_MEM_PATH):
-        '''实例化文件属性，初始化操作文件对象'''
         self.filename = filename
         self.wb = load_workbook(self.filename)
         # self.ws = self.wb[self.sheetname] if self.sheetname is not None else self.wb.active
@@ -179,43 +176,98 @@ class HandleExcel(object):
     def get_cpus(self):
         self.ws = self.wb["cpu"]
         self.times = self.ws.max_row - 1
-        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):
             self.cpus.append(tuple_data[1])
             # self.cases_list.append(self.Cases(*tuple_data))
         return self.cpus
-    
+
     def get_mems(self):
         self.ws = self.wb["mem"]
         self.times = self.ws.max_row - 1
-        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):
             self.mems.append(tuple_data[1])
         return self.mems
-    
+
     def get_netflows(self):
         self.ws = self.wb["netflow"]
         self.times = self.ws.max_row - 1
-        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):
             self.netflows.append(tuple_data[3])
             self.uploads.append(tuple_data[1])
             self.downloads.append(tuple_data[2])
-        return self.uploads,self.downloads,self.netflows
-    
+        return self.uploads, self.downloads, self.netflows
+
     def get_batts(self):
         self.ws = self.wb["batt"]
         self.times = self.ws.max_row - 1
-        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):    # 每次遍历，返回由某行所有单元格值组成的一个元组
+        for tuple_data in self.ws.iter_rows(min_row=self.ws.min_row + 1, values_only=True):
             self.batts.append(tuple_data[1])
             # self.cases_list.append(self.Cases(*tuple_data))
         return self.batts
-    
-    
+
+
 if __name__ == '__main__':
     excel = HandleExcel()
     cpus = excel.get_cpus()
     mems = excel.get_mems()
-    upload,download,netflows = excel.get_netflows()
+    upload, download, netflows = excel.get_netflows()
     batts = excel.get_batts()
     print(cpus)
+
     print(mems)
     print(netflows)
     print(batts)
+
+    # The two-dimensional diagram supports displaying Chinese
+    plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
+    times = [i for i in range(1, excel.times + 1)]
+    cpus = list(map(float, cpus))
+    # print("内存值：{}".format(cpus))
+
+    # sum
+    # total = 0
+    # for value in cpus:
+    #    total += value
+    # average max min
+    # average = round(total / len(cpus), 2)
+    # cpu_h = sorted(cpus)
+    # print("内存平均值：{}".format(average))
+    # print("内存最低值：{}".format(cpu_h[0]))
+    # print("内存最高值：{}".format(cpu_h[len(cpu_h) - 1]))
+
+    # Draw graphics based on data
+    plt.figure(figsize=(11, 7), dpi=600)
+
+    # Generate grid
+    plt.grid(axis="y")
+
+    xpoint = np.array(times)
+    ypoint = np.array(cpus)
+
+    plt.plot(xpoint, ypoint, "c-", linewidth=1, label="com.hcp.flaget")
+
+    # Axis range
+    plt.ylim(min(ypoint) - 20, max(ypoint) + 20)
+    plt.xlim(-1, len(xpoint) + 2)
+
+    plt.xlabel('采集次数', fontsize=16)
+    plt.ylabel("cpu使用率%", fontsize=16)
+    plt.title("APP进程CPU占用率%", fontsize=24)
+
+    plt.legend()
+
+    # Abscissa display interval
+    # if len(times) <= 15:
+    #     pass
+    # else:
+    #     t = int(len(times) / 15)
+    #     plt.xticks(range(0, len(times), t))
+
+    # plt.show()
+
+    # If it is a date format, it needs to be rotated
+    # plt.gcf().autofmt_xdate()
+
+    time_now = time.strftime("%Y%m%d%H%M%S", time.localtime())
+    path = os.path.join(ScreenShot_DIR, 'cpu' + time_now)
+    plt.savefig(path)
