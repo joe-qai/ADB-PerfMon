@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import random
 import threading
 import time
 from tkinter import messagebox, ttk
@@ -324,7 +325,7 @@ if __name__ == '__main__':
             # act_count.insert('0.0', 5)
 
             tkinter.Label(root, text='执行频率(ms):', justify=LEFT).grid(row=13, column=5)
-            random_event = [500, 1000, 1500, 2000, 3000]
+            random_event = [10, 60, 500, 1000]
             time_t = ttk.Combobox(root, values=random_event, width=5)
             time_t.grid(row=13, column=6)
             time_t.current(0)
@@ -376,7 +377,7 @@ if __name__ == '__main__':
             tkinter.Label(root, text='伪随机数:').grid(row=18, column=1)
             pseudorandom = tkinter.Text(root, height=1, width=30)
             pseudorandom.grid(row=18, column=2)
-            pseudorandom.insert('0.0', 5555)
+            pseudorandom.insert('0.0', random.randint(1, 500)) # random seeds
 
             tkinter.Label(root, text='日志存放路径:', justify=LEFT).grid(row=19, column=3)
             log_path = tkinter.Text(root, height=1, width=30)
