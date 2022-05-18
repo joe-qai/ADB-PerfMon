@@ -367,6 +367,5 @@ def get_cmmand(package):
 
 
 if __name__ == '__main__':
-    package = 'com.hcp.flaget'
-
+    package = 'com.wrtech.huanyou'
     SumDic(package)

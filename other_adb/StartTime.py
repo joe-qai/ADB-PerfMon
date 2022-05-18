@@ -30,7 +30,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 
 CON_LOG = '../config/log.conf'
-logging.config.fileConfig(CON_LOG)
+#logging.config.fileConfig(CON_LOG)
 logging = logging.getLogger()
 
 
@@ -55,7 +55,7 @@ else:
 
 # 启动app，获取启动时间
 def launch_app():
-    cmd = 'adb shell am start -W -n com.chutzpah.yasibro/com.chutzpah.yasibro.modules.main.MainActivity'
+    cmd = 'adb shell am start -W -n com.tencent.mm/com.tencent.mm.ui.LauncherUI'
     # 运行cmd命令
     count = os.popen(cmd)
 
@@ -107,7 +107,7 @@ while row < 31:
     time.sleep(6)
     
     
-    cmd = 'adb shell am force-stop com.chutzpah.yasibro'
+    cmd = 'adb shell am force-stop com.tencent.mm'
     
     os.popen(cmd)
     
