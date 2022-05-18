@@ -2,11 +2,15 @@
 '''
 获取系统total cpu
 '''
-import os, csv
-import time
 import csv
-import numpy as np
+import os
+import time
+
 from matplotlib import pyplot as plt
+
+from common.configpath import CPUINFOPATH, TESTDATAPATH, CONFIGPATH, \
+    PNGREPORTSPATH
+
 
 cpu_list = []
 time_list = []
@@ -18,7 +22,7 @@ package_name = []
 # 读取进程名称（包名）
 def get_applist():
     global package_name
-    with open('config/director.txt', encoding='utf-8', mode='r') as f:
+    with open('{}/director.txt'.format(CONFIGPATH), encoding='utf-8', mode='r') as f:
         lines_all = f.readlines()
         for appname in lines_all:
             package_name1 = appname
@@ -36,7 +40,6 @@ def get_cpu():
         lines = f.readlines()
         for appname in app_list:
             for lis in lines:
-                print(lis)
                 # 适配低版本手机
                 if appname in lis and '%' in lis:
                     now = time.strftime("%H:%M:%S", time.localtime())
@@ -54,7 +57,7 @@ def get_cpu():
                     cpu1 = lis.split(' ')
                     cpu2 = list(set(cpu1))
                     cpu2.sort(key=cpu1.index)
-                    cpu_h = cpu2[len(cpu2) - 4]
+                    cpu_h = cpu2[1]
                     print(cpu_h, now)
                     cpu_list.append(cpu_h)
                     break
@@ -67,16 +70,14 @@ def write_head():
     headers = ['name:']
     headers.append(app_list[0])
     headers.append('init_cpu')
-    with open('TestData/cpuinfo/cpuinfo.csv', 'w+', newline='') as csvfile:
+    with open('{}/cpuinfo.csv'.format(CPUINFOPATH), 'w+', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
 
 
 # 将数值写入csv，用于绘图时读取
 def write_report():
-
-
-    with open('TestData/cpuinfo/cpuinfo.csv', 'a+', newline='') as csvfile:
+    with open('{}/cpuinfo.csv'.format(CPUINFOPATH), 'a+', newline='') as csvfile:
         writer = csv.writer(csvfile)
         for key in cpu_list:
             writer.writerow([' ', ' ', key])
@@ -84,30 +85,30 @@ def write_report():
 
 # 绘制折线图，生成测试报告
 def mapping():
-    filename = 'TestData/cpuinfo/cpuinfo.csv'
+    filename = '{}/cpuinfo.csv'.format(CPUINFOPATH)
     with open(filename) as f:
         reader = csv.reader(f)
-        header_row = next(reader)
+        next(reader)
         highs = []
         for row in reader:
             high = row[2]
             highs.append(high)
-        # print(highs)
+        print(highs)
 
     wights = time_list
     highs_float = list(map(float, highs))
-
+    
     # 输出平均值
     total = 0
     for value in highs_float:
         total += value
     average = round(total / len(highs_float), 2)
-    print(f"CPU平均值：{average}")
+    print("CPU平均值：{}".format(average))
 
     # 输出最低值和最高值
     highs_hl = sorted(highs_float)
-    print(f"CPU最低值：{highs_hl[0]}")
-    print(f"CPU最高值：{highs_hl[len(highs_hl) - 1]}")
+    print("CPU最低值：{}".format(highs_hl[0]))
+    print("CPU最高值：{}".format(highs_hl[len(highs_hl) - 1]))
 
     # 根据数据绘制图形
     plt.figure(figsize=(11, 4), dpi=600)
@@ -136,9 +137,7 @@ def mapping():
     plt.legend()
 
     # 横坐标显示间隔
-    if len(wights) <= 15:
-        pass
-    else:
+    if len(wights) > 15:
         t = int(len(wights) / 15)
         plt.xticks(range(0, len(wights), t))
 
@@ -147,25 +146,24 @@ def mapping():
     plt.gcf().autofmt_xdate()
 
     time_now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    path = "report/" + 'cpu' + time_now
+    path = os.path.join(PNGREPORTSPATH, 'cpu' , time_now)
     plt.savefig(path)
 
 
-# 自动识别当前需检测的
 def name_app():
-    cmd = 'adb shell dumpsys window | findstr mCurrentFocus > TestData/name_info.csv'
+    cmd = 'adb shell dumpsys window | findstr mCurrentFocus > {}/name_info.csv'.format(TESTDATAPATH)
     os.system(cmd)
-    with open('TestData/name_info.csv', encoding='utf-8', mode='r') as f:
+    with open('{}/name_info.csv'.format(TESTDATAPATH), encoding='utf-8', mode='r') as f:
         lines = f.readlines()
         for line in lines:
             if 'mCurrentFocus' in line:
                 name1 = line.split('/')[0].split(' ')
                 name = name1[len(name1) - 1]
 
-    with open('config/director.txt', encoding='utf-8', mode='w') as f_name:
+    with open('{}/director.txt'.format(CONFIGPATH), encoding='utf-8', mode='w') as f_name:
         text = name
         f_name.write(text)
-    print(f"将要监测的包名为：{text}")
+    print("将要监测的包名为：{}".format(text))
 
 
 # 控制监测时间
@@ -178,9 +176,9 @@ def time_control():
             break
 
         time.sleep(1)
-        adb = "adb shell top -n 1 > TestData/adb_info.csv"
-        d = os.system(adb)
-        filename = "TestData/adb_info.csv"
+        adb = "adb shell top -n 1 > {}/adb_cpuinfo.csv".format(TESTDATAPATH)
+        os.system(adb)
+        filename = "{}/adb_info.csv".format(TESTDATAPATH)
         get_cpu()
 
 

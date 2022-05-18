@@ -9,7 +9,7 @@ from tkinter.constants import END, LEFT
 
 from adb.adb_python import starttime_app, adb_monkey, get_device_status, get_cpu_mem, \
     get_battery, get_netflow2, get_pid, set_battery_status
-from adb.configpath import ScreenShot_DIR, BASEDIR
+from common.configpath import ScreenShot_DIR, BASEDIR
 from utils.handler_excel import start_app, get_cpu
 from utils.logger import LOG, logger
 

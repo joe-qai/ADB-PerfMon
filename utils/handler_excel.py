@@ -11,7 +11,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 import time
 
-from adb.configpath import TIME_PATH, CPU_MEM_PATH, ScreenShot_DIR
+from common.configpath import TIME_PATH, CPU_MEM_PATH, ScreenShot_DIR
 from utils.logger import logger, LOG
 
 

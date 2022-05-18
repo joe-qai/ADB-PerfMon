@@ -1,9 +1,10 @@
 # coding:utf-8
 
 import os, time
-import sys, re
 import random
 import subprocess
+import re
+
 
 device = ""
 package = "com.hcp.flaget"
@@ -18,7 +19,7 @@ anr_flag = 0
 def devices():
     global device, flag
     cmd1 = "adb devices > content/devices.csv"
-    d = os.system(cmd1)
+    os.system(cmd1)
     with open("content/devices.csv", encoding="utf-8", mode="r") as f:  # 筛选出进程包名和activity
         lines = f.readlines()
         for line in lines:
@@ -30,7 +31,7 @@ def devices():
 def get_package():
     global package
     cmd = 'adb shell dumpsys window | findstr mCurrentFocus > content/info.csv'  # info.csv文件中是当前activity概括信息
-    d = os.system(cmd)
+    os.system(cmd)
     with open("content/info.csv", encoding="utf-8", mode="r") as f:  # 筛选出进程包名和activity
         lines = f.readlines()
         for line in lines:
@@ -57,9 +58,15 @@ def get_package():
 def start_monkey():
     global device, package, number
     number = random.randint(1, 500)
-    cmd1 = f"adb -s {device} shell monkey -p {package} -v -v -v --throttle 10 -s {number} --ignore-crashes --ignore-timeouts --ignore-native-crashes --pct-syskeys 0 --pct-anyevent 0 8000000 > log/monkeylog.txt"
-    cmd2 = f"adb -s {device} logcat -v time *:E > log/logcat.txt"
-    # print(f"包名：{package}")
+    
+    cmd1 = "adb -s {} shell monkey -p {} -v -v -v --throttle 10 \
+        -s {} --ignore-crashes --ignore-timeouts --ignore-native-crashes \
+        --pct-syskeys 0 --pct-anyevent 0 8000000 > log/monkeylog.txt".format(device,package,number)
+        
+    cmd2 = "adb -s {} logcat -v time *:E > log/logcat.txt".format(device)
+    
+    print("包名：{}".format(package))
+    
     subprocess.Popen(cmd2, shell=True)
     time.sleep(1)
     subprocess.Popen(cmd1, shell=True)
@@ -71,8 +78,8 @@ def is_finish():
     global result_true, result_false
     with open('log/monkeylog.txt', encoding='utf-8', mode='r') as f:
         lines = f.read()
-        pattern1 = re.compile(f'Monkey finished', re.IGNORECASE)
-        pattern2 = re.compile(f'System appears to have crashed', re.IGNORECASE)
+        pattern1 = re.compile('Monkey finished', re.IGNORECASE)
+        pattern2 = re.compile('System appears to have crashed', re.IGNORECASE)
         result_true = pattern1.findall(lines)
         result_false = pattern2.findall(lines)
 
@@ -97,13 +104,13 @@ if __name__ == '__main__':
     while True:
         is_finish()
         if "Monkey finished" in result_true:  # 结果含有"Monkey finished"结果为pass
-            print(f"本次稳定性测试种子值为:{number}")
+            print("本次稳定性测试种子值为:{}".format(number))
             select()
-            print(f"monkey日志中存在{crash_flag}处crash")
-            print(f"monkey日志中存在{anr_flag}处anr")
+            print("monkey日志中存在{}处crash".format(crash_flag))
+            print("monkey日志中存在{}处anr".format(anr_flag))
             exit("pass")
         elif "System appears to have crashed" in result_false:  # System appears to have crashed"结果为false
-            print(f"本次稳定性测试种子值为:{number}")
+            print("本次稳定性测试种子值为:{}".format(number))
             exit("false")
         else:
             time.sleep(1)

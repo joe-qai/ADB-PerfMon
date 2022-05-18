@@ -5,7 +5,7 @@ import os
 import logbook
 import logbook.more
 
-from adb.configpath import LOG_DIR
+from common.configpath import LOG_DIR
 
 __author__ = "joe-tester"
 

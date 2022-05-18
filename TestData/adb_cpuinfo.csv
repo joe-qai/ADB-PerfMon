@@ -1,0 +1,25 @@
+[?25l[0m[H[J[s[999C[999B[6n[uTasks: 526 total,   2 running, 486 sleeping,   0 stopped,   3 zombie            
+Mem:   3878876k total,  3720772k used,   158104k free,     1348k buffers        
+Swap:  2293756k total,  1157144k used,  1136612k free,  1124952k cached         
+800%cpu 145%user   0%nice  58%sys 597%idle   0%iow   0%irq   0%sirq   0%host    
+[7m  PID USER         PR  NI VIRT  RES  SHR S[%CPU] %MEM     TIME+ ARGS            [0m
+16687 u0_a142      10 -10 3.5G 464M 241M R  160  12.2 588:22.15 com.hcp.flaget
+27898 shell        20   0  10M 2.2M 1.4M R 30.3   0.0   0:00.10 top -n 1
+  491 system       -2  -8 469M  10M 4.9M S 12.1   0.2 483:24.19 surfaceflinger
+25073 root         20   0    0    0    0 S  3.0   0.0   0:01.15 [kworker/u16:1]
+20493 root          0 -20    0    0    0 S  3.0   0.0   0:27.59 [kworker/u17:4]
+  461 system       -3  -8  75M 1.8M 1.3M S  3.0   0.0 159:28.96 android.hardwar+
+27665 root         20   0    0    0    0 S  0.0   0.0   0:00.02 [kworker/1:1]
+27498 root         20   0    0    0    0 S  0.0   0.0   0:00.00 [kworker/5:0]
+27376 root         20   0    0    0    0 S  0.0   0.0   0:00.03 [kworker/0:1]
+27266 root         20   0    0    0    0 S  0.0   0.0   0:00.03 [kworker/6:1]
+27233 root         20   0    0    0    0 S  0.0   0.0   0:00.28 [kworker/u16:6]
+27232 root         20   0    0    0    0 S  0.0   0.0   0:00.36 [kworker/u16:5]
+27218 root         20   0    0    0    0 S  0.0   0.0   0:00.00 [kworker/u16:3]
+27163 root         20   0    0    0    0 S  0.0   0.0   0:00.01 [kworker/u16:2]
+27099 root         20   0    0    0    0 S  0.0   0.0   0:00.13 [kworker/3:2]
+27069 root         20   0    0    0    0 S  0.0   0.0   0:00.10 [kworker/2:2]
+26133 root         20   0    0    0    0 S  0.0   0.0   0:00.00 [kworker/4:2]
+26105 root         20   0    0    0    0 S  0.0   0.0   0:00.15 [kworker/1:2]
+25754 root         20   0    0    0    0 S  0.0   0.0   0:00.21 [kworker/3:1]
+25750 root         20   0    0    0    0 S  0.0   0.0   0:00.18 [kworker/2:0][?25h[0m[1000;1H[K[?25h[0m[1000;1H[K

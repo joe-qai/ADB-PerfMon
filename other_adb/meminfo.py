@@ -1,15 +1,13 @@
 # coding:utf-8
 
 import csv
-import os, csv
-import shlex
-import subprocess
+import os
 import time
 
 from matplotlib import pyplot as plt
-from numpy import around
 
-import numpy as np
+from common.configpath import TESTDATAPATH, CONFIGPATH, MEMINFOPATH, \
+    PNGREPORTSPATH
 
 
 mem_dict = {}
@@ -21,7 +19,7 @@ t = 0
 
 def get_applist():
     global package_name
-    with open('config/director.txt', encoding='utf-8', mode='r') as f:
+    with open('{}/director.txt'.format(CONFIGPATH), encoding='utf-8', mode='r') as f:
         lines = f.readlines()
         for line in lines:
             package_name1 = line
@@ -33,13 +31,11 @@ def get_mem():
     global filename
     with open(filename, encoding="utf-8", mode="r") as f:
         lines = f.readlines()
-        start_flag = False
         for appname in app_list:
             for line in lines:
                 if "Total PSS by OOM adjustment" in line:
                     break
                 if appname in line and 'pid' in line and 'kB' in line:
-                    
                     mem_v = line.strip().split(':')[0].replace('kB', '').replace(',', '')
                     line_name = line.split(':')[1].split('(')[0].strip()
                     if line_name in appname:
@@ -67,24 +63,24 @@ def write_head():
     headers = ['name:']
     headers.append(app_list[0])
     headers.append('init_mem')
-    with open('TestData/meminfo/meminfo.csv', 'w+', newline='') as csvfile:
+    with open('{}/meminfo.csv'.format(MEMINFOPATH), 'w+', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         writer.writeheader()
 
 
 def write_report():
     headers = ['name', 'aaa', 'init_mem']
-    with open('TestData/meminfo/meminfo.csv', 'a+', newline='') as csvfile:
+    with open('{}/meminfo.csv'.format(MEMINFOPATH), 'a+', newline='') as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=headers)
         for key in mem_dict:
             writer.writerow({'init_mem': mem_dict[key]})
 
 
 def mapping():
-    filename = 'TestData/meminfo/meminfo.csv'
+    filename = '{}/meminfo.csv'.format(MEMINFOPATH)
     with open(filename) as f:
         reader = csv.reader(f)
-        header_row = next(reader)
+        next(reader)
         highs = []
         for row in reader:
             high = row[2]
@@ -94,19 +90,19 @@ def mapping():
     wights = time_list
     highs_float = list(map(float, highs))
 
-    print(f"内存值：{highs_float}")
+    print("内存值：{}".format(highs_float))
 
     # 输出平均值
     total = 0
     for value in highs_float:
         total += value
     average = round(total / len(highs_float), 2)
-    print(f"内存平均值：{average}")
+    print("内存平均值：{}".format(average))
 
     # 输出最低值和最高值
     highs_hl = sorted(highs_float)
-    print(f"内存最低值：{highs_hl[0]}")
-    print(f"内存最高值：{highs_hl[len(highs_hl) - 1]}")
+    print("内存最低值：{}".format(highs_hl[0]))
+    print("内存最高值：{}".format(highs_hl[len(highs_hl) - 1]))
 
     # 根据数据绘制图形
     plt.figure(figsize=(11, 4), dpi=600)
@@ -149,26 +145,25 @@ def mapping():
 
 
     time_now = time.strftime("%Y%m%d%H%M%S", time.localtime())
-    path = "report/" + 'meminfo' + time_now
+    path = os.path.join(PNGREPORTSPATH + 'meminfo' + time_now)
     plt.savefig(path)
 
 
 def name_app():
-    cmd = 'adb shell dumpsys window | findstr mCurrentFocus > TestData/name_info.csv'
+    cmd = 'adb shell dumpsys window | findstr mCurrentFocus > {}/name_info.csv'.format(TESTDATAPATH)
     os.system(cmd)
-    with open('TestData/name_info.csv', encoding='utf-8', mode='r') as f:
+    with open('{}/name_info.csv'.format(TESTDATAPATH), encoding='utf-8', mode='r') as f:
         lines = f.readlines()
         for line in lines:
             if 'mCurrentFocus' in line:
                 name1 = line.split('/')[0].split(' ')
                 name = name1[len(name1) - 1]
 
-    with open('config/director.txt', encoding='utf-8', mode='w') as f_name:
+    with open('{}/director.txt'.format(CONFIGPATH), encoding='utf-8', mode='w') as f_name:
         text = name
         f_name.write(text)
-    print(f"将要监测的包名为：{text}")
-
-
+    print("将要监测的包名为：{}".format(text))
+    
 def time_control():
     global filename
     while True:
@@ -177,9 +172,9 @@ def time_control():
             # if end_time - start_time >= tol_time:    #秒
             break
 
-        adb = "adb shell dumpsys meminfo > TestData/adb_info.csv"
-        d = os.system(adb)
-        filename = "TestData/adb_info.csv"
+        adb = "adb shell dumpsys meminfo > {}/adb_meminfo.csv".format(TESTDATAPATH)
+        os.system(adb)
+        filename = "{}/adb_meminfo.csv".format(TESTDATAPATH)
         get_mem()
         write_report()
 
@@ -192,13 +187,3 @@ if __name__ == "__main__":
     write_head()
     time_control()
     mapping()
-#     for _ in range(30):
-#         cmd = "adb shell dumpsys meminfo |findstr com.hcp.flaget"
-#         res = os.popen(cmd).read().split()
-#         print(int(res[0][:-2].replace(",",""))/1024)
-        
-#     for r in res:
-#         if "com.hcp.flaget" in r and 'pid' in r and 'K' in r:
-#             print(r)
-    # res.strip().split(':')[0].replace('K', '').replace(',', '')
-    
