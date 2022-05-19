@@ -20,19 +20,24 @@
     # 然后替换包名 “com.fundrive.truck.mobile ”
 
 
-import time
-import xlwt
-import os
 import logging.config
+import os
+import time
+
 import xlrd
-import pandas as pd
-import matplotlib.pyplot as plt
+import xlwt
+
+from common.configpath import STARTTIMEPATH, CON_LOG
+from common.generic import del_file
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import pandas as pd
 
-CON_LOG = '../config/log.conf'
-#logging.config.fileConfig(CON_LOG)
+
+# Delete existing files
+del_file(STARTTIMEPATH)
+logging.config.fileConfig(CON_LOG)
 logging = logging.getLogger()
-
 
 # 指定默认字体
 mpl.rcParams['font.sans-serif'] = ['SimHei']

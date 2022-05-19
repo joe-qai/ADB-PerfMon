@@ -1,49 +1,25 @@
-# 备注说明：
+# -*- coding: utf-8 -*-
 
 # APP性能数据，内存，CPU，流量等，自动生成数据表格
-# 如果需要换APP程序，请更新以下内容：
-# 更新包名和Activity：
-# 请查找内容：
 
-    # 通过adb启动程序
-    # （1）cmd = 'adb shell am start -W -n com.fundrive.truck.mobile/com.mapbar.android.MainActivity '
-        # 然后修改替换包名和Activity“com.fundrive.truck.mobile/com.mapbar.android.MainActivity '”
-
-    # （2） package = 'com.fundrive.truck.mobile'
-
-        # 然后替换包名“com.fundrive.truck.mobile ”
-
-
-
-import os, re
-import time
 import datetime
-import subprocess
-import numpy as np
+import logging.config
+import os, re
 from subprocess import Popen, PIPE
-import logging
+import time
 
-# 定义保存性能数据的目录
-performance_file = os.path.dirname(os.path.dirname(__file__)) + '/TestData/'
-
-# 判断有没有这个数据目录，没有的话创建，有的话pass
-if os.path.exists(performance_file +"/performance_data"):
-
-    pass
-
-else:
-
-    os.makedirs(performance_file + "/performance_data")
+from common.configpath import PERFPATH, CON_LOG
+from common.generic import del_file
+import numpy as np
 
 
-
+# Delete existing files
+del_file(PERFPATH)
+logging.config.fileConfig(CON_LOG)
 csv = logging.getLogger()
 
 csv.setLevel(logging.DEBUG)
-
-# 定义保存数据文件
-fh = logging.FileHandler(performance_file + "/performance_data/" + time.strftime("%Y%m%d%H%M%S", time.localtime(time.time())) + '.csv')
-
+fh = logging.FileHandler(os.path.join(PERFPATH, time.strftime("%Y%m%d%H%M%S", time.localtime(time.time())) + '.csv'))
 fh.setLevel(logging.INFO)
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
@@ -53,20 +29,20 @@ fh.setFormatter(formatter)
 csv.addHandler(ch)
 csv.addHandler(fh)
 
-# 获取内存
-def get_mem(package):
 
+def get_mem(package):
+    """Get memory"""
     try:
-        cmd = r'adb shell dumpsys meminfo ' + package + ' | findstr "TOTAL"'  # % apk_file
+        cmd = r'adb shell dumpsys meminfo ' + package + ' | findstr "TOTAL"'    # % apk_file
         total = str((os.popen(cmd).readlines()))
         return (re.findall(r"\d+\.?\d*", total)[0])
     except Exception as e:
-        print(str(e), "get_mem(package)，请检查包名是否正确……")
+        print(e, "get_mem(package)，Please check whether the {} is correct……".format(package))
         return -1
 
 
 def dump_layer_stats(str_command):
-
+    """Get activity page layer rendering"""
     L = []
     p = Popen(str_command, shell=True, stdout=PIPE, stderr=PIPE, universal_newlines=True)
     for line in p.stdout:
@@ -83,11 +59,11 @@ def dump_layer_stats(str_command):
                 elif (ldata[1]) == 0:
                     continue
                 L.append((ldata[1]))
-                #    p.terminate()
     return L
 
 
 def get_fps(str_command):
+    """Get picture frame frequency"""
     while True:
         L = dump_layer_stats(str_command)
         size = len(L)
@@ -95,8 +71,7 @@ def get_fps(str_command):
         if size > 0:
             interval = L[size - 1] - L[0]
         else:
-            # print("get_fps(str_command)，请使用adb shell dumpsys SurfaceFlinger更新SurfaceView名称")
-            return -1  # (获取不到异常)
+            return -1
         if interval == 0:
             continue
         fps = 1000000000 * (size - 1) / interval
@@ -104,8 +79,9 @@ def get_fps(str_command):
 
 
 def get_battery():
+    """Get battery percentage"""
     try:
-        cmd = 'adb shell dumpsys battery'  # % apk_file
+        cmd = 'adb shell dumpsys battery'    # % apk_file
         redcmd = str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[",
                                                                                                                  " ")
         battery_dic = {}
@@ -114,10 +90,8 @@ def get_battery():
             if ":" in i:
                 b_dic = {i.split(":")[0].replace(" ", ""): i.split(":")[1]}
                 battery_dic.update(b_dic)
-
         return battery_dic
-    except Exception as e:
-        print(e, "get_battery()，请检查包名是否正确……")
+    except:
         bat_dic = {'ACpowered': ' false ',
                    'USBpowered': ' false ',
                    'Wirelesspowered': ' false ',
@@ -136,29 +110,25 @@ def get_battery():
         return bat_dic
 
 
-def getUid(package_name):  # 获取UID
+def getUid(package_name):
+    """get app userId"""
     try:
-        p1 = subprocess.Popen('adb shell dumpsys package ' + package_name + ' | grep "userId"',
-                              stdout=subprocess.PIPE, stderr=subprocess.PIPE)  # 用adb获取信息
-        uidLongString = p1.stdout.read()
-        uidLongList = uidLongString.split()
-        uidMap = uidLongList[0]
-        uid = str(uidMap).split("=")[1].replace("'", "")
-
+        p1 = os.popen('adb shell dumpsys package {} |findstr userId'.format(package_name))
+        uidLongString = p1.read()
+        uid = str(uidLongString).split("=")[1].strip()
         return uid
-
     except Exception as e:
-
-        print(e, "getUid()，请检查包名是否正确……")
+        print(e, "getUid()，Please check whether the {} is correct...".format(package))
 
 
 def getRev(Uid):
+    """Get traffic"""
     try:
         rx_bytes = []
         tx_bytes = []
         rx_tcp_bytes = []
         tx_tcp_bytes = []
-        cmd = 'adb shell "cat /proc/net/xt_qtaguid/stats | grep %s"' % (Uid)
+        cmd = 'adb shell cat /proc/net/xt_qtaguid/stats |findstr %s' % (Uid)
         redcmd = str((os.popen(cmd).readlines())).replace("['", '').replace("]", '').replace("\\n'", '').replace("'",
                                                                                                                  "").split(
             ",")
@@ -176,69 +146,49 @@ def getRev(Uid):
         return listdic
 
     except Exception as e:
-
-        print(e, "getRev(package_name)，请检查包名是否正确……")
-
+        print(e, "Traffic statistics method does not exist!!!")
         return [-1, -1, -1, -1]
 
 
 def get_cpu(pid):
-
+    """get cpuinfo"""
     try:
-
-        cmd = 'adb shell "cat /proc/stat | grep ^cpu"'  # % apk_file
-
+        cmd = 'adb shell cat /proc/stat |findstr ^cpu'
         cmd1 = 'adb shell cat /proc/%s/stat' % (pid)
-
         redcmd = str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[", " ")
-
         redcmd = [i for i in redcmd.split(",")[0].split(" ") if i != '']
-
         redcmd.remove(redcmd[0])
-
         del redcmd[-3:]
-
         total_cpu = sum(list(map(int, redcmd)))
-
         idle = redcmd[3]
-
-        redcmd1 = str((os.popen(cmd1).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[", " ").split( " ")[14:18]
-
+        redcmd1 = str((os.popen(cmd1).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[", " ").split(" ")[14:18]
         pjiff = sum(list(map(int, redcmd1)))
-
-
         return [total_cpu, idle, pjiff]
-
-
-
     except Exception as e:
-
-        print(e, "get_s_cpu(),检查adb是否连通……")
-
+        print(e, "get_s_cpu(),Please check whether the ADB is connected……")
         return [-1, -1, -1, -1, -1, -1, -1]
 
 
 def get_Screen():
-
+    """Get current screen information"""
     try:
-
-        cmd = 'adb shell "dumpsys window policy|grep isStatusBarKeyguard"'
-
+        cmd = 'adb shell dumpsys window policy|findstr isStatusBarKeyguard'
         redcmd = \
-  str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[", " ").split( "=")[-1]
-
+  str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[", " ").split("=")[-1]
+        print(redcmd)
         return (redcmd)
 
     except Exception as e:
 
-        print(e, "get_Screen(),检查adb是否连通……")
+        print(e, "get_Screen(),Please check whether the ADB is connected……")
 
 
 
 def get_iphoneinfo():
+    """Get mobile information"""
     try:
         dics = {}
-        cmd = 'adb shell "getprop | grep product"'
+        cmd = 'adb shell getprop |findstr product'
         redcmd = str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[",
                                                                                                                  " ").replace(
             " ", "").split(",")
@@ -255,11 +205,12 @@ def get_iphoneinfo():
         str(round(int(re.findall(r"\d+\.?\d*", redcmd1)[0]) / 1024 / 1024)) + "G")
         return ("%s;%s;%s" % (pp, cupxh, mmet))
     except Exception as e:
-        print(str(e), "get_mem(package)，请检查adb是否连通……")
+        print(str(e), "get_mem(package)，Please check whether the ADB is connected……")
         return 'xxxxx'
 
 
 def get_PID(package):
+    """get app PID"""
     if int(str((os.popen("adb shell getprop ro.build.version.release").readlines())).replace("'", "").replace("\\n",
                                                                                                               " ").replace(
             "]", " ").replace("[", " ").split('.')[0]) >= 8:
@@ -273,22 +224,20 @@ def get_PID(package):
             ",")
         for n in redcmd:
             if package in n:
-                list_n = [i for i in n.split(" ") if i != '']  # 删除空元素
+                list_n = [i for i in n.split(" ") if i != '']    # 删除空元素
                 if package == list_n[-1]:
                     pid.append(list_n[1])
         return pid[0]
     except Exception as e:
-        print(str(e), "get_mem(package)，请检查adb是否连通……")
+        print(str(e), "get_mem(package)，Please check whether the ADB is connected……")
         return 'xxxxx'
 
 
 def SumDic(package):
-
-    time.sleep(5)
-
+    """Loop execution, write data to CSV file"""
     Uid = getUid(package)
     pid = get_PID(package)
-    net1 = np.array(getRev(Uid))  # 流量
+    net1 = np.array(getRev(Uid))    # 流量
     total_cpu1, idle1, pjiff1 = get_cpu(pid)
     str_command = get_cmmand(package)
     iphone_info = get_iphoneinfo()
@@ -302,11 +251,11 @@ def SumDic(package):
         level = int(get_battery()['level'])
         batterytem = int(get_battery()['temperature']) / 10
         total_cpu2, idle2, pjiff2 = get_cpu(pid)
-        net2 = np.array(getRev(Uid))  # 流量
-        pcpu = 100.0 * (int(pjiff2) - int(pjiff1)) / (int(total_cpu2) - int(total_cpu1))  # process cpu
+        net2 = np.array(getRev(Uid))    # 流量
+        pcpu = 100.0 * (int(pjiff2) - int(pjiff1)) / (int(total_cpu2) - int(total_cpu1))    # process cpu
         systemCpu = 100.0 * ((int(total_cpu2) - int(idle2)) - (int(total_cpu1) - int(idle1))) / (
-                    int(total_cpu2) - int(total_cpu1))  # system cpu
-        rbytes, tbytes, rtcp, ttcp = (net2 - net1)  # 流量
+                    int(total_cpu2) - int(total_cpu1))    # system cpu
+        rbytes, tbytes, rtcp, ttcp = (net2 - net1)    # 流量
         total_cpu1, idle1, pjiff1 = total_cpu2, idle2, pjiff2
         net1 = net2
         sumdic = {
@@ -330,8 +279,9 @@ def SumDic(package):
 
 
 def get_Activity(package):
+    """Get the activity page of the package"""
     try:
-        cmd = 'adb shell dumpsys SurfaceFlinger --list'  # % apk_file
+        cmd = 'adb shell dumpsys SurfaceFlinger --list'    # % apk_file
         redcmd = str((os.popen(cmd).readlines())).replace("'", "").replace("\\n", " ").replace("]", " ").replace("[",
                                                                                                                  " ").split(
             " ")
@@ -341,10 +291,11 @@ def get_Activity(package):
                 listpack.append(i)
         return max_list(listpack).replace(" ", "")
     except Exception as e:
-        print(str(e), "get_mem(package)，请检查adb是否连接……")
+        print(str(e), "get_mem(package)，Please check whether the ADB is connected……")
 
 
 def max_list(lt):
+    
     temp = 0
     for i in lt:
         if lt.count(i) > temp:
@@ -354,6 +305,7 @@ def max_list(lt):
 
 
 def get_cmmand(package):
+    """"""
     str_command0 = 'adb shell dumpsys SurfaceFlinger --latency SurfaceView\ -\ %s' % (get_Activity(package))
     str_command1 = 'adb shell dumpsys SurfaceFlinger --latency SurfaceView  %s' % (get_Activity(package))
     str_command2 = 'adb shell dumpsys SurfaceFlinger --latency  %s' % (get_Activity(package))
@@ -367,5 +319,6 @@ def get_cmmand(package):
 
 
 if __name__ == '__main__':
-    package = 'com.wrtech.huanyou'
+    global package
+    package = 'com.hcp.flaget'
     SumDic(package)
