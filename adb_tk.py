@@ -206,6 +206,7 @@ def cpu_app():
 
         get_cpu(times=times_list, start_cpu=cpu_list, recv_list=rescv_list, send_list=send_list, total_list=total_list,
                 mem_list=mem_list, batt_list=batt_list)
+        set_battery_status(2)  # restore battery status
         perform_btn['state'] = 'normal'
         LOG.info('Test complete!!!')
         messagebox.showinfo('toast', 'The test is completed and the test report has been generated!')

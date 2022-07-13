@@ -168,8 +168,8 @@ def get_netflow2(pid, wlan="wlan0"):
 
 
 @logger("battery test set status=1")
-def set_battery_status():
-    cmd = 'adb shell dumpsys battery set status 1'
+def set_battery_status(status=1):
+    cmd = 'adb shell dumpsys battery set status %s' % status
     os.popen(cmd)
 
 

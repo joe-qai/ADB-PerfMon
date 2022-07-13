@@ -20,16 +20,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="72e52cae-d393-4852-a335-83ca73cfc178" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/Adb_Monkey_Performance.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Adb_Monkey_Performance.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/adb/adb_python.py" beforeDir="false" afterPath="$PROJECT_DIR$/adb/adb_python.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/adb/checkpath.py" beforeDir="false" afterPath="$PROJECT_DIR$/adb/checkpath.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/adb_tk.py" beforeDir="false" afterPath="$PROJECT_DIR$/adb_tk.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/common/generic.py" beforeDir="false" afterPath="$PROJECT_DIR$/common/generic.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils/handler_excel.py" beforeDir="false" afterPath="$PROJECT_DIR$/utils/handler_excel.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/xlsxReports/cpu_netflow_mem_report.xlsx" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -426,29 +419,29 @@
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="740" y="279" key="FileChooserDialogImpl/0.0.1920.1050@0.0.1920.1050" timestamp="1657702481994" />
-    <state width="1899" height="335" key="GridCell.Tab.0.bottom" timestamp="1657706642424">
+    <state width="1899" height="335" key="GridCell.Tab.0.bottom" timestamp="1657706812408">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1899" height="335" key="GridCell.Tab.0.bottom/0.0.1920.1050@0.0.1920.1050" timestamp="1657706642424" />
-    <state width="1899" height="335" key="GridCell.Tab.0.center" timestamp="1657706642424">
+    <state width="1899" height="335" key="GridCell.Tab.0.bottom/0.0.1920.1050@0.0.1920.1050" timestamp="1657706812408" />
+    <state width="1899" height="335" key="GridCell.Tab.0.center" timestamp="1657706812408">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1899" height="335" key="GridCell.Tab.0.center/0.0.1920.1050@0.0.1920.1050" timestamp="1657706642424" />
-    <state width="1899" height="335" key="GridCell.Tab.0.left" timestamp="1657706642424">
+    <state width="1899" height="335" key="GridCell.Tab.0.center/0.0.1920.1050@0.0.1920.1050" timestamp="1657706812408" />
+    <state width="1899" height="335" key="GridCell.Tab.0.left" timestamp="1657706812408">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1899" height="335" key="GridCell.Tab.0.left/0.0.1920.1050@0.0.1920.1050" timestamp="1657706642424" />
-    <state width="1899" height="335" key="GridCell.Tab.0.right" timestamp="1657706642424">
+    <state width="1899" height="335" key="GridCell.Tab.0.left/0.0.1920.1050@0.0.1920.1050" timestamp="1657706812408" />
+    <state width="1899" height="335" key="GridCell.Tab.0.right" timestamp="1657706812408">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state width="1899" height="335" key="GridCell.Tab.0.right/0.0.1920.1050@0.0.1920.1050" timestamp="1657706642424" />
+    <state width="1899" height="335" key="GridCell.Tab.0.right/0.0.1920.1050@0.0.1920.1050" timestamp="1657706812408" />
     <state x="461" y="169" key="SettingsEditor" timestamp="1657702498562">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
     <state x="461" y="169" key="SettingsEditor/0.0.1920.1050@0.0.1920.1050" timestamp="1657702498562" />
-    <state x="662" y="257" width="596" height="536" key="find.popup" timestamp="1657705792786">
+    <state x="662" y="257" width="596" height="536" key="find.popup" timestamp="1657707239311">
       <screen x="0" y="0" width="1920" height="1050" />
     </state>
-    <state x="662" y="257" width="596" height="536" key="find.popup/0.0.1920.1050@0.0.1920.1050" timestamp="1657705792786" />
+    <state x="662" y="257" width="596" height="536" key="find.popup/0.0.1920.1050@0.0.1920.1050" timestamp="1657707239311" />
   </component>
 </project>
