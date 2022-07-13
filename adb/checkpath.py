@@ -12,7 +12,7 @@ __author__ = "joe-tester"
 def get_sys_env():
     system = platform.system()
     find_manage = 'findstr'
-    if system is not 'Windows':
+    if system != 'Windows':
         find_manage = 'grep'
     return find_manage
 
@@ -21,6 +21,5 @@ def get_sys_env():
 def get_device_list():
     result = subprocess.Popen(
         "adb devices", shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).stdout.readlines()
-    print(result)
     devices = [line.split()[0].decode("utf-8") for line in result[1:-1]]
     return devices

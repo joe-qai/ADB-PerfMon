@@ -3,8 +3,8 @@ import os
 import random
 import threading
 import time
-from tkinter import messagebox, ttk
 import tkinter
+from tkinter import messagebox, ttk
 from tkinter.constants import END, LEFT
 
 from adb.adb_python import starttime_app, adb_monkey, get_device_status, get_cpu_mem, \
@@ -17,17 +17,19 @@ from utils.logger import LOG, logger
 @logger('Test the time of start the app')
 def StartAPP():
     start_tim = []
-    times = []
-    status_shebei = get_device_status()
-    if status_shebei == 'device':
+    deviceStatus = get_device_status()
+    _sum = 0
+    counts = []  # times
+    if deviceStatus == 'device':
         try:
-            packname = packagName.get('0.0', END).strip()
-            acti = activ_t.get('0.0', END).strip()
+            packName = packagName.get('0.0', END).strip()
+            _acts = activ_t.get('0.0', END).strip()
             get_times = times_act.get()
-        except:
+        except Exception as p:
             LOG.info('Test data cannot be obtained, please check！')
             messagebox.showinfo('toast', 'Test data cannot be obtained, please check！')
-        if len(acti) <= 1 or len(packname) <= 1:
+            raise p
+        if len(_acts) <= 1 or len(packName) <= 1:
             messagebox.showinfo('toast', 'Package name or activity cannot be empty')
             LOG.info('Package name or activity cannot be empty')
         else:
@@ -35,34 +37,32 @@ def StartAPP():
                 messagebox.showinfo('toast', 'Times cannot be empty!!!')
                 LOG.info('Times cannot be empty!!!')
             else:
-                i = 0
-                e1['state'] = 'normal'
-                e1.delete(1.0, tkinter.END)
+                dis_el['state'] = 'normal'
+                dis_el.delete(1.0, tkinter.END)
                 for i in range(int(get_times)):
                     start_time = starttime_app(
-                        packagename=packname, packagenameactivicy=acti)
+                        packagename=packName, packagenameactivicy=_acts)
                     start_tim.append(int(start_time[1]))
-
-                    times.append(i)
+                    counts.append(i + 1)
                     if start_time is None:
                         messagebox.showwarning('Warning',
                                                'Please check the package name you entered or the activity of the package')
                         break
-                    text = '第%s次启动时间：%s' % (i + 1, start_time[1])
-                    LOG.info('第%s次启动时间：%s' % (i + 1, start_time[1]))
-                    sum += int(start_time[1])
-                    e1['state'] = 'normal'
-                    e1.insert(tkinter.END, text)
-                    e1.insert(tkinter.END, '\n')
-                    e1.see(END)
+                    text = '第%s次启动时间：%s ms' % (i + 1, start_time[1])
+                    LOG.info('第%s次启动时间：%s ms' % (i + 1, start_time[1]))
+                    _sum += int(start_time[1])
+                    dis_el['state'] = 'normal'
+                    dis_el.insert(tkinter.END, text)
+                    dis_el.insert(tkinter.END, '\n')
+                    dis_el.see(END)
                     btn_start['state'] = 'disabled'
-                e1.insert(tkinter.END, ('平均用时:%s' % (sum / int(get_times))))
-                LOG.info(('平均用时:%s' % (sum / int(get_times))))
-                start_app(times=times, start=start_tim)
+                dis_el.insert(tkinter.END, ('平均用时:%s' % (_sum / int(get_times))))
+                LOG.info(('平均用时:%s' % (_sum / int(get_times))))
+                start_app(times=counts, start=start_tim)
                 messagebox.showinfo('toast',
                                     'The test report has been generated. Please check the current directory!!!')
                 LOG.info('The test report has been generated. Please check the current directory!!!')
-                e1['state'] = 'disabled'
+                dis_el['state'] = 'disabled'
                 btn_start['state'] = 'normal'
                 messagebox.showinfo('Notice', 'The test has been completed!!!')
                 LOG.info('The test has been completed!!!')
@@ -136,11 +136,11 @@ def ScreenShot():
 
 @logger('CPU occupancy, uplink and downlink traffic, memory test')
 def cpu_app():
-    device_status = get_device_status()
-    if device_status == 'device':
-        packagename = package_name.get('0.0', END).split()[0]
+    deviceStatus = get_device_status()
+    if deviceStatus == 'device':
+        packageName = package_name.get('0.0', END).split()[0]
         count = time_c.get()
-        if len(packagename) <= 5 or not packagename.find("."):
+        if len(packageName) <= 5 or not packageName.find("."):
             LOG.info('The package name must be true and valid!!!')
             messagebox.showwarning('Warning', 'The package name must be true and valid!!!')
         times_list = []
@@ -150,13 +150,13 @@ def cpu_app():
         total_list = []
         mem_list = []
         batt_list = []
-        pid = get_pid(packagename)
+        pid = get_pid(packageName)
         set_battery_status()
         for i in range(int(count)):
             # netflow
             rcv, send, netflow_sum = get_netflow2(pid)
             # cpu and mem
-            cpu_p, mem_p = get_cpu_mem(packagename)
+            cpu_p, mem_p = get_cpu_mem(packageName)
             # batt
             batt = get_battery()
 
@@ -190,8 +190,8 @@ def cpu_app():
 
             netflow_t['state'] = 'normal'
             netflow_t.insert(tkinter.END, (
-                '总流量：%sk,上传流量:%sk,下载流量：%sk' % (
-                    round(netflow_sum / 1024, 2), round(rcv / 1024, 2), round(send / 1024, 2))))
+                    '总流量：%sk,上传流量:%sk,下载流量：%sk' % (
+                round(netflow_sum / 1024, 2), round(rcv / 1024, 2), round(send / 1024, 2))))
             LOG.info('第%s次：总流量：%sk,上传流量:%sk,下载流量：%sk' % (
                 i, round(netflow_sum / 1024, 2), round(rcv / 1024, 2), round(send / 1024, 2)))
             netflow_t.insert(tkinter.END, '\n')
@@ -216,7 +216,7 @@ def cpu_app():
 
 @logger('Use threads to start the test! Collect CPU occupancy, upload and download traffic, memory')
 def teread():
-    '''If you do not use the UI interface, you can do without threads'''
+    """If you do not use the UI interface, you can do without threads"""
     for _ in range(1):
         t = threading.Thread(target=cpu_app, args=())
         t.start()
@@ -224,7 +224,7 @@ def teread():
 
 @logger('Start app time thread test')
 def teread_start():
-    '''If you do not use the UI interface, you can do without threads'''
+    """If you do not use the UI interface, you can do without threads"""
     for _ in range(1):
         t = threading.Thread(target=StartAPP, args=())
         t.start()
@@ -266,7 +266,7 @@ if __name__ == '__main__':
             q_of_electr.grid(row=3, column=4)
 
             # counts
-            times = [60, 180, 300, 600]
+            times = [10, 60, 180, 300, 600]
             time_c = ttk.Combobox(root, values=times, width=5)
             time_c.current(0)
             time_c.grid(row=1, column=6)
@@ -279,10 +279,12 @@ if __name__ == '__main__':
             tkinter.Label(root, text='性能测试包名:', justify=LEFT).grid(row=0, column=1)
 
             # Start APP Testing
-            btn_start = tkinter.Button(root, text='启动时间测试', font=("黑体", 15, "bold"), command=teread_start).grid(row=9,
-                                                                                                                column=3)
+            btn_start = tkinter.Button(root, text='启动时间测试', font=("黑体", 15, "bold"), command=teread_start)
+            btn_start.grid(row=9, column=3)
+
             tkinter.Label(root, text='启动时间展示:', justify=LEFT).grid(row=11, column=1)
-            e1 = tkinter.Text(root, width=30, height=5, state="disabled").grid(row=11, column=2, padx=20, pady=30)
+            dis_el = tkinter.Text(root, width=30, height=5, state='disabled')
+            dis_el.grid(row=11, column=2, padx=20, pady=30)
 
             tkinter.Label(root, text='启动测试包名:', justify=LEFT).grid(row=10, column=1)
             packagName = tkinter.Text(root, height=1, width=30)
@@ -294,7 +296,7 @@ if __name__ == '__main__':
             activ_t.grid(row=10, column=4)
             activ_t.insert('0.0', "请输入被测APP应用的主页面")
 
-            num = [60, 120, 180, 300]
+            num = [10, 60, 120, 180, 300]
             # state='readonly'
             tkinter.Label(root, text='执行次数:').grid(row=10, column=5)
             times_act = ttk.Combobox(root, values=num, width=5)
@@ -313,7 +315,7 @@ if __name__ == '__main__':
             pkname.grid(row=13, column=2)
             pkname.insert('0.0', '请输入被测APP应用的包名')
 
-            c_c = [60, 120, 180, 300]
+            c_c = [10, 60, 120, 180, 300]
             # times is counts
             tkinter.Label(root, text='执行次数:', justify=LEFT).grid(row=13, column=3)
             cc = ttk.Combobox(root, values=c_c, width=28)
@@ -377,7 +379,7 @@ if __name__ == '__main__':
             tkinter.Label(root, text='伪随机数:').grid(row=18, column=1)
             pseudorandom = tkinter.Text(root, height=1, width=30)
             pseudorandom.grid(row=18, column=2)
-            pseudorandom.insert('0.0', random.randint(1, 500)) # random seeds
+            pseudorandom.insert('0.0', random.randint(1, 500))  # random seeds
 
             tkinter.Label(root, text='日志存放路径:', justify=LEFT).grid(row=19, column=3)
             log_path = tkinter.Text(root, height=1, width=30)

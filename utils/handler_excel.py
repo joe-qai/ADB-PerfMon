@@ -2,18 +2,17 @@
 
 __author__ = "joe-tester"
 
-
 import os
-
-from openpyxl.reader.excel import load_workbook
-import xlsxwriter
-import numpy as np
-from matplotlib import pyplot as plt
 import time
+
+import numpy as np
+import xlsxwriter
+from matplotlib import pyplot as plt
+from openpyxl import Workbook
+from openpyxl.reader.excel import load_workbook
 
 from common.configpath import TIME_PATH, CPU_MEM_PATH, ScreenShot_DIR
 from utils.logger import logger, LOG
-
 
 # The two-dimensional diagram supports displaying Chinese
 plt.rcParams['font.sans-serif'] = ['Microsoft YaHei']
@@ -113,7 +112,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
 
         })
         chart2.add_series({
-            'name': '=netflow!$C$1',    # netflow
+            'name': '=netflow!$C$1',  # netflow
             'categories': '=netflow!$A$2:$A$%s' % (len(times) + 1),
             'values': '=netflow!$C$2:$C$%s' % (len(times) + 1),
         })
@@ -167,7 +166,7 @@ def get_cpu(times, start_cpu, recv_list, send_list, total_list, mem_list, batt_l
 class HandleExcel(object):
     def __init__(self, filename=CPU_MEM_PATH):
         self.filename = filename
-        self.wb = load_workbook(self.filename)
+        self.wb = load_workbook(self.filename) if os.path.isfile(self.filename) else Workbook(self.filename)
         # self.ws = self.wb[self.sheetname] if self.sheetname is not None else self.wb.active
         # title
         # self.sheet_head_tuple = tuple(self.ws.iter_rows(max_row=self.ws.min_row, values_only=True))[0]
@@ -225,14 +224,14 @@ def mapping_cpu(packagename):
     plt.figure(figsize=(11, 7), dpi=600)
     # Generate grid
     plt.grid(axis="y")
-    
+
     # print("cpu列表：{}".format(cpus))
 
     # sum
     # total = 0
     # for value in cpus:
     #    total += value
-    
+
     # average max min
     # average = round(total / len(cpus), 2)
     # cpu_h = sorted(cpus)
@@ -268,8 +267,8 @@ def mapping_cpu(packagename):
 
     path = os.path.join(ScreenShot_DIR, 'cpu_' + time_now)
     plt.savefig(path)
-    
-    
+
+
 def mapping_mem(packagename):
     mems = excel.get_mems()
     mems = list(map(float, mems))
@@ -278,7 +277,7 @@ def mapping_mem(packagename):
     plt.figure(figsize=(11, 7), dpi=600)
     # Generate grid
     plt.grid(axis="y")
-    
+
     xpoint = np.array(times)
     # print("内存值：{}".format(mems))
     ypoint = np.array(mems)
@@ -296,8 +295,8 @@ def mapping_mem(packagename):
 
     path = os.path.join(ScreenShot_DIR, 'mem_' + time_now)
     plt.savefig(path)
-    
-    
+
+
 def mapping_batt():
     batts = excel.get_batts()
     batts = list(map(float, batts))
@@ -306,10 +305,10 @@ def mapping_batt():
     plt.figure(figsize=(11, 7), dpi=600)
     # Generate grid
     plt.grid(axis="y")
-    
+
     xpoint = np.array(times)
     ypoint = np.array(batts)
-    
+
     plt.plot(xpoint, ypoint, color="red", linestyle="-", linewidth=1, label="手机电量")
 
     # Axis range
@@ -324,7 +323,7 @@ def mapping_batt():
 
     path = os.path.join(ScreenShot_DIR, 'batt_' + time_now)
     plt.savefig(path)
-    
+
 
 def mapping_netflow():
     uploads, downloads, netflows = excel.get_netflows()
@@ -335,18 +334,18 @@ def mapping_netflow():
     plt.figure(figsize=(11, 7), dpi=600)
     # Generate grid
     plt.grid(axis="y")
-    
+
     times = [i for i in range(1, excel.times + 1)]
     xpoint = np.array(times)
-    
+
     ypoint1 = np.array(uploads)
     ypoint2 = np.array(downloads)
     ypoint3 = np.array(netflows)
 
-    plt.plot(xpoint, ypoint1, color="blue", linestyle="-", marker='.',linewidth=1, label="上行流量")
-    plt.plot(xpoint, ypoint2, color="green", linestyle="-",marker='.', linewidth=1, label="下行流量")
-    plt.plot(xpoint, ypoint3, color="red", linestyle="-",marker='.', linewidth=1, label="总流量")
-    
+    plt.plot(xpoint, ypoint1, color="blue", linestyle="-", marker='.', linewidth=1, label="上行流量")
+    plt.plot(xpoint, ypoint2, color="green", linestyle="-", marker='.', linewidth=1, label="下行流量")
+    plt.plot(xpoint, ypoint3, color="red", linestyle="-", marker='.', linewidth=1, label="总流量")
+
     # Axis range
     plt.ylim(min(ypoint3) - 1000, max(ypoint3) + 1000)
     plt.xlim(-1, len(xpoint) + 2)
@@ -377,46 +376,46 @@ def mapping_pic():
     netflows = list(map(float, netflows))
     # collection count
     times = [i for i in range(1, excel.times + 1)]
-    
+
     # Draw graphics based on data
     plt.figure(figsize=(11, 7), dpi=600)
     # Generate grid
     plt.grid(axis="y")
-    
+
     # xpoint of all
     xpoint = np.array(times)
-    
+
     # cpu
     ypoint = np.array(cpus)
     plt.subplot(2, 2, 1)
-    plt.plot(xpoint,ypoint)
+    plt.plot(xpoint, ypoint)
     plt.title("cpu使用率%")
-    
+
     # mem
     ypoint = np.array(mems)
     plt.subplot(2, 2, 2)
-    plt.plot(xpoint,ypoint)
+    plt.plot(xpoint, ypoint)
     plt.title("内存使用率%")
-    
+
     # batt
     ypoint = np.array(batts)
     plt.subplot(2, 2, 4)
-    plt.plot(xpoint,ypoint)
+    plt.plot(xpoint, ypoint)
     plt.title("剩余电量%")
-    
+
     # netflow   
     ypoint1 = np.array(uploads)
     ypoint2 = np.array(downloads)
     ypoint3 = np.array(netflows)
     plt.subplot(2, 2, 3)
-    plt.plot(xpoint,ypoint1)
-    plt.plot(xpoint,ypoint2)
-    plt.plot(xpoint,ypoint3)
+    plt.plot(xpoint, ypoint1)
+    plt.plot(xpoint, ypoint2)
+    plt.plot(xpoint, ypoint3)
     plt.title("流量统计K")
     # main title
     plt.suptitle("Android应用性能指标数据")
     # display pic
-    plt.legend() 
+    plt.legend()
     path = os.path.join(ScreenShot_DIR, 'cpu_mem_netflow_' + time_now)
     # save pic
     plt.savefig(path)

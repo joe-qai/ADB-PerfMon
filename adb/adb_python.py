@@ -66,7 +66,7 @@ def get_total_mem():
 @logger('get cpuinfo')
 def get_cpu(packagename):
     # Here is the parameter that can be taken when collecting CPU information, that is - N - D refresh interval
-    cmd_t = 'adb shell top -n 1 | %s "%s"' % (find, packagename)
+    cmd_t = 'adb shell top -n 1 | %s "%s"' % (find, packagename[:13])
     # ['28779', 'u0_a138', '10', '-10', '3.1G', '455M', '269M', 'R', '160', '12.0', '238:07.14', 'com.xxxx.xxxx']
     cpu_p = os.popen(cmd_t).read().split()[8]
     return cpu_p
@@ -75,7 +75,7 @@ def get_cpu(packagename):
 @logger('get meminfo')
 def get_mem(packagename):
     # Physical memory actually used
-    cmd_t = 'adb shell top -n 1| %s "%s"' % (find, packagename)
+    cmd_t = 'adb shell top -n 1| %s "%s"' % (find, packagename[:13])
     mem_p = os.popen(cmd_t).read().split()[9]
     return mem_p
 
@@ -86,7 +86,7 @@ def get_cpu_mem(packagename):
     # RES  SHR S [%CPU] %MEM
     # RES - SHR
     # %MEM * TotalMem ≈ RES
-    cmd_t = 'adb shell top -n 1| %s "%s"' % (find, packagename)
+    cmd_t = 'adb shell top -n 1| %s "%s"' % (find, packagename[:13])
     line = os.popen(cmd_t).read().split()
     cpu_p = line[8]
     mem_p = line[9]
