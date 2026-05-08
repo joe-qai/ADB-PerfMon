@@ -1,4 +1,4 @@
-# ADB_Monkey_Performance
+# ADB PerfMon
 
 一个基于 Python3 + Tkinter + ADB 的 Android APP 性能监控与自动化测试工具。
 
@@ -89,7 +89,7 @@ python adb_tk.py
 ## 项目结构
 
 ```
-Adb_Monkey_Performance/
+ADB_PerfMon/
 ├── adb/                  # ADB 核心模块
 │   ├── adb_python.py     # ADB 命令封装
 │   └── checkpath.py      # 路径检查工具

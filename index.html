@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ADB Monkey Performance - Android性能测试工具</title>
+    <title>ADB PerfMon - Android性能测试工具</title>
     <style>
         * {
             margin: 0;
@@ -12,16 +12,19 @@
         }
 
         :root {
-            --primary-color: #FF6B6B;
-            --secondary-color: #4ECDC4;
-            --accent-color: #FFE66D;
-            --dark-bg: #1A1A2E;
-            --dark-card: #16213E;
+            --primary-color: #00F5D4;
+            --secondary-color: #FF2E63;
+            --accent-color: #FFD93D;
+            --neon-purple: #9D4EDD;
+            --dark-bg: #0A0A0F;
+            --dark-card: #12121A;
             --text-primary: #FFFFFF;
-            --text-secondary: #A0A0A0;
-            --gradient-primary: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);
-            --gradient-secondary: linear-gradient(135deg, #4ECDC4 0%, #44A08D 100%);
-            --gradient-accent: linear-gradient(135deg, #FFE66D 0%, #FFD93D 100%);
+            --text-secondary: #B0B0B0;
+            --gradient-primary: linear-gradient(135deg, #00F5D4 0%, #00D9FF 50%, #9D4EDD 100%);
+            --gradient-secondary: linear-gradient(135deg, #FF2E63 0%, #FF6B35 100%);
+            --gradient-accent: linear-gradient(135deg, #FFD93D 0%, #FF7033 100%);
+            --glow-primary: 0 0 30px rgba(0, 245, 212, 0.5);
+            --glow-secondary: 0 0 30px rgba(255, 46, 99, 0.5);
         }
 
         body {
@@ -32,6 +35,59 @@
             overflow-x: hidden;
         }
 
+        /* 背景动画 */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bg-animation::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle at 20% 30%, rgba(0, 245, 212, 0.1) 0%, transparent 40%);
+            animation: orbit 20s linear infinite;
+        }
+
+        .bg-animation::after {
+            content: '';
+            position: absolute;
+            bottom: -100%;
+            right: -100%;
+            width: 300%;
+            height: 300%;
+            background: radial-gradient(circle at 80% 70%, rgba(255, 46, 99, 0.1) 0%, transparent 40%);
+            animation: orbit 25s linear infinite reverse;
+        }
+
+        @keyframes orbit {
+            0% { transform: rotate(0deg) scale(1); }
+            100% { transform: rotate(360deg) scale(1.2); }
+        }
+
+        /* 网格背景 */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 245, 212, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 245, 212, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
         /* 导航栏 */
         nav {
             position: fixed;
@@ -39,8 +95,9 @@
             left: 0;
             right: 0;
             z-index: 100;
-            background: rgba(26, 26, 46, 0.95);
-            backdrop-filter: blur(10px);
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(0, 245, 212, 0.1);
             padding: 1rem;
         }
 
@@ -53,34 +110,13 @@
         }
 
         .logo {
-            font-size: 1.25rem;
-            font-weight: bold;
+            font-size: 1.5rem;
+            font-weight: 900;
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-        }
-
-        .nav-links {
-            display: none;
-        }
-
-        .menu-btn {
-            width: 44px;
-            height: 44px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 5px;
-            cursor: pointer;
-        }
-
-        .menu-btn span {
-            width: 24px;
-            height: 3px;
-            background: var(--text-primary);
-            border-radius: 2px;
+            text-shadow: 0 0 20px rgba(0, 245, 212, 0.3);
         }
 
         /* 英雄区域 */
@@ -90,328 +126,48 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 4rem 1rem 2rem;
+            padding: 5rem 1rem 3rem;
             position: relative;
             overflow: hidden;
         }
 
-        .hero::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle at 30% 20%, rgba(255, 107, 107, 0.15) 0%, transparent 50%);
-            animation: pulse 8s ease-in-out infinite;
-        }
-
-        .hero::after {
-            content: '';
-            position: absolute;
-            bottom: -30%;
-            right: -30%;
-            width: 150%;
-            height: 150%;
-            background: radial-gradient(circle at 70% 80%, rgba(78, 205, 196, 0.1) 0%, transparent 50%);
-            animation: pulse 6s ease-in-out infinite reverse;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.5; }
-            50% { transform: scale(1.1); opacity: 0.8; }
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
         }
 
         .hero h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            text-align: center;
-            margin-bottom: 1rem;
-            z-index: 1;
+            font-size: 3rem;
+            font-weight: 900;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            animation: slideIn 0.8s ease-out;
         }
 
-        .hero h1 span {
+        .hero h1 .highlight {
             background: var(--gradient-primary);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            text-shadow: 0 0 40px rgba(0, 245, 212, 0.5);
+        }
+
+        .hero h1 .accent {
+            color: var(--secondary-color);
+            text-shadow: 0 0 30px rgba(255, 46, 99, 0.5);
         }
 
         .hero p {
-            font-size: 1.1rem;
-            color: var(--text-secondary);
-            text-align: center;
-            max-width: 400px;
-            margin-bottom: 2rem;
-            z-index: 1;
-        }
-
-        .hero-buttons {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            z-index: 1;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border-radius: 50px;
-            font-size: 1rem;
-            font-weight: 600;
-            text-decoration: none;
-            text-align: center;
-            transition: all 0.3s ease;
-            min-width: 200px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-primary {
-            background: var(--gradient-primary);
-            color: white;
-            box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 30px rgba(255, 107, 107, 0.6);
-        }
-
-        .btn-secondary {
-            background: transparent;
-            color: var(--text-primary);
-            border: 2px solid var(--secondary-color);
-        }
-
-        .btn-secondary:hover {
-            background: var(--secondary-color);
-            color: var(--dark-bg);
-        }
-
-        /* 特性卡片 */
-        .features {
-            padding: 3rem 1rem;
-            background: var(--dark-card);
-        }
-
-        .section-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            text-align: center;
-            margin-bottom: 2rem;
-            background: var(--gradient-secondary);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .features-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 1.5rem;
-        }
-
-        .feature-card {
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
-            border-radius: 20px;
-            padding: 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary-color);
-            box-shadow: 0 10px 40px rgba(255, 107, 107, 0.2);
-        }
-
-        .feature-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 1.25rem;
-            font-size: 1.75rem;
-        }
-
-        .icon-cpu { background: linear-gradient(135deg, #FF6B6B, #FF8E53); }
-        .icon-memory { background: linear-gradient(135deg, #4ECDC4, #44A08D); }
-        .icon-network { background: linear-gradient(135deg, #FFE66D, #FFD93D); }
-        .icon-time { background: linear-gradient(135deg, #A8E6CF, #88D8B0); }
-        .icon-monkey { background: linear-gradient(135deg, #DDA0DD, #C9A0DC); }
-        .icon-report { background: linear-gradient(135deg, #87CEEB, #5FA8D6); }
-
-        .feature-card h3 {
             font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .feature-card p {
             color: var(--text-secondary);
-            font-size: 0.9rem;
+            max-width: 500px;
+            margin-bottom: 3rem;
+            animation: slideIn 0.8s ease-out 0.2s;
+            animation-fill-mode: both;
         }
 
-        /* 使用流程 */
-        .workflow {
-            padding: 3rem 1rem;
-        }
-
-        .workflow-steps {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-        }
-
-        .step {
-            display: flex;
-            gap: 1.5rem;
-            align-items: flex-start;
-        }
-
-        .step-number {
-            width: 44px;
-            height: 44px;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.25rem;
-            flex-shrink: 0;
-        }
-
-        .step-content {
-            flex: 1;
-        }
-
-        .step-content h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-
-        .step-content p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* 技术栈 */
-        .tech-stack {
-            padding: 3rem 1rem;
-            background: var(--dark-card);
-        }
-
-        .tech-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-        }
-
-        .tech-item {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 12px;
-            padding: 1rem;
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-
-        .tech-item:hover {
-            background: var(--primary-color);
-            transform: scale(1.05);
-        }
-
-        .tech-item span {
-            font-size: 1.5rem;
-            margin-bottom: 0.5rem;
-            display: block;
-        }
-
-        .tech-item p {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-        }
-
-        /* 底部 */
-        footer {
-            padding: 2rem 1rem;
-            text-align: center;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-        }
-
-        footer p {
-            color: var(--text-secondary);
-            font-size: 0.85rem;
-        }
-
-        /* 响应式 */
-        @media (min-width: 768px) {
-            .nav-links {
-                display: flex;
-                gap: 2rem;
-            }
-
-            .nav-links a {
-                color: var(--text-secondary);
-                text-decoration: none;
-                font-weight: 500;
-                transition: color 0.3s;
-            }
-
-            .nav-links a:hover {
-                color: var(--primary-color);
-            }
-
-            .menu-btn {
-                display: none;
-            }
-
-            .hero h1 {
-                font-size: 4rem;
-            }
-
-            .hero p {
-                font-size: 1.25rem;
-                max-width: 600px;
-            }
-
-            .hero-buttons {
-                flex-direction: row;
-            }
-
-            .features-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .workflow-steps {
-                max-width: 800px;
-                margin: 0 auto;
-            }
-
-            .tech-grid {
-                grid-template-columns: repeat(4, 1fr);
-                max-width: 800px;
-                margin: 0 auto;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .features-grid {
-                grid-template-columns: repeat(3, 1fr);
-                max-width: 1200px;
-                margin: 0 auto;
-            }
-
-            .hero h1 {
-                font-size: 5rem;
-            }
-        }
-
-        /* 动画 */
-        @keyframes fadeInUp {
+        @keyframes slideIn {
             from {
                 opacity: 0;
                 transform: translateY(30px);
@@ -422,39 +178,331 @@
             }
         }
 
-        .hero h1, .hero p, .hero-buttons {
-            animation: fadeInUp 0.8s ease-out;
+        .hero-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            animation: slideIn 0.8s ease-out 0.4s;
+            animation-fill-mode: both;
         }
 
-        .hero p { animation-delay: 0.2s; opacity: 0; animation-fill-mode: forwards; }
-        .hero-buttons { animation-delay: 0.4s; opacity: 0; animation-fill-mode: forwards; }
+        .btn {
+            padding: 1.25rem 3rem;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            min-width: 220px;
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary {
+            background: var(--gradient-secondary);
+            color: white;
+            box-shadow: var(--glow-secondary);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 50px rgba(255, 46, 99, 0.7), 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            box-shadow: var(--glow-primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary-color);
+            color: var(--dark-bg);
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 0 50px rgba(0, 245, 212, 0.7), 0 10px 40px rgba(0,0,0,0.5);
+        }
+
+        /* 特性卡片 */
+        .features {
+            padding: 5rem 1rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title {
+            font-size: 2.25rem;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(0, 245, 212, 0.3);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: linear-gradient(145deg, rgba(18, 18, 26, 0.9), rgba(10, 10, 15, 0.9));
+            border-radius: 24px;
+            padding: 2.5rem;
+            border: 1px solid rgba(0, 245, 212, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            border-color: var(--primary-color);
+            box-shadow: 0 20px 60px rgba(0, 245, 212, 0.15), inset 0 0 30px rgba(0, 245, 212, 0.05);
+        }
+
+        .feature-card:hover::before {
+            opacity: 1;
+        }
+
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            font-size: 2rem;
+            background: linear-gradient(135deg, rgba(0, 245, 212, 0.1), rgba(0, 245, 212, 0.05));
+            border: 1px solid rgba(0, 245, 212, 0.3);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover .feature-icon {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(0, 245, 212, 0.4);
+        }
+
+        .feature-card h3 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary-color);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        /* 使用流程 */
+        .workflow {
+            padding: 5rem 1rem;
+            background: linear-gradient(180deg, transparent 0%, rgba(18, 18, 26, 0.5) 100%);
+            position: relative;
+            z-index: 1;
+        }
+
+        .workflow-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .step {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 44px;
+            left: 21px;
+            width: 2px;
+            height: calc(100% + 1rem);
+            background: linear-gradient(180deg, var(--primary-color), transparent);
+        }
+
+        .step:last-child::after {
+            display: none;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--gradient-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 900;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            box-shadow: 0 0 20px rgba(255, 46, 99, 0.4);
+            transition: all 0.3s;
+        }
+
+        .step:hover .step-number {
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(255, 46, 99, 0.6);
+        }
+
+        .step-content {
+            flex: 1;
+            padding-top: 5px;
+        }
+
+        .step-content h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 0.75rem;
+            color: var(--accent-color);
+        }
+
+        .step-content p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* 底部 */
+        footer {
+            padding: 3rem 1rem;
+            text-align: center;
+            border-top: 1px solid rgba(0, 245, 212, 0.1);
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 1;
+        }
+
+        footer p {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 响应式 */
+        @media (min-width: 768px) {
+            .hero h1 {
+                font-size: 4.5rem;
+            }
+
+            .hero p {
+                font-size: 1.4rem;
+                max-width: 600px;
+            }
+
+            .hero-buttons {
+                flex-direction: row;
+                gap: 1.5rem;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .workflow-steps {
+                gap: 4rem;
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .hero h1 {
+                font-size: 6rem;
+            }
+
+            .features-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--dark-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--gradient-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-color);
+        }
     </style>
 </head>
 <body>
+    <div class="bg-animation"></div>
+    <div class="grid-bg"></div>
+
     <!-- 导航栏 -->
     <nav>
         <div class="nav-container">
-            <div class="logo">ADB Performance</div>
-            <div class="nav-links">
-                <a href="#features">功能特性</a>
-                <a href="#workflow">使用流程</a>
-                <a href="#tech">技术栈</a>
-            </div>
-            <div class="menu-btn">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
+            <div class="logo">ADB PerfMon</div>
         </div>
     </nav>
 
     <!-- 英雄区域 -->
     <section class="hero">
-        <h1>Android <span>性能测试</span>工具</h1>
-        <p>基于 Python + ADB 的自动化性能监控解决方案，实时监控 CPU、内存、流量等关键指标</p>
-        <div class="hero-buttons">
-            <a href="#" class="btn btn-primary">开始使用</a>
-            <a href="#features" class="btn btn-secondary">了解更多</a>
+        <div class="hero-content">
+            <h1>
+                Android <span class="highlight">性能</span><span class="accent">测试</span>工具
+            </h1>
+            <p>基于 Python + ADB 的自动化性能监控解决方案，实时监控 CPU、内存、流量等关键指标</p>
+            <div class="hero-buttons">
+                <a href="https://github.com/joe-qai/Adb_Monkey_Performance" target="_blank" class="btn btn-primary">🚀 开始使用</a>
+                <a href="#features" class="btn btn-secondary">📋 了解更多</a>
+            </div>
         </div>
     </section>
 
@@ -463,32 +511,32 @@
         <h2 class="section-title">核心功能</h2>
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon icon-cpu">⚡</div>
+                <div class="feature-icon">⚡</div>
                 <h3>CPU 监控</h3>
                 <p>实时采集应用 CPU 占用率，支持多进程监控和历史数据分析</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon icon-memory">💾</div>
+                <div class="feature-icon">💾</div>
                 <h3>内存监控</h3>
                 <p>精确测量应用内存使用情况（PSS/RSS），识别内存泄漏问题</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon icon-network">📊</div>
+                <div class="feature-icon">📊</div>
                 <h3>流量统计</h3>
                 <p>统计应用上传/下载流量，帮助优化网络请求效率</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon icon-time">⏱️</div>
+                <div class="feature-icon">⏱️</div>
                 <h3>启动时间测试</h3>
                 <p>精确测量应用冷启动/热启动耗时，优化应用启动速度</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon icon-monkey">🐒</div>
+                <div class="feature-icon">🐒</div>
                 <h3>Monkey 测试</h3>
                 <p>支持与性能监控同时进行的自动化压力测试</p>
             </div>
             <div class="feature-card">
-                <div class="feature-icon icon-report">📈</div>
+                <div class="feature-icon">📈</div>
                 <h3>可视化报告</h3>
                 <p>自动生成 Excel 报告和图表，便于数据分析和汇报</p>
             </div>
@@ -537,44 +585,12 @@
         </div>
     </section>
 
-    <!-- 技术栈 -->
-    <section class="tech-stack" id="tech">
-        <h2 class="section-title">技术栈</h2>
-        <div class="tech-grid">
-            <div class="tech-item">
-                <span>🐍</span>
-                <p>Python 3</p>
-            </div>
-            <div class="tech-item">
-                <span>📱</span>
-                <p>Android ADB</p>
-            </div>
-            <div class="tech-item">
-                <span>🎨</span>
-                <p>Tkinter</p>
-            </div>
-            <div class="tech-item">
-                <span>📊</span>
-                <p>Matplotlib</p>
-            </div>
-        </div>
-    </section>
-
     <!-- 底部 -->
     <footer>
-        <p>ADB Monkey Performance - Android 性能测试工具</p>
-        <p style="margin-top: 0.5rem; font-size: 0.75rem;">© 2022 All Rights Reserved</p>
+        <p>ADB PerfMon - Android 性能测试工具 © 2022 All Rights Reserved</p>
     </footer>
 
     <script>
-        // 移动端菜单切换
-        const menuBtn = document.querySelector('.menu-btn');
-        const navLinks = document.querySelector('.nav-links');
-        
-        menuBtn.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
-
         // 平滑滚动
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -584,6 +600,15 @@
                     target.scrollIntoView({ behavior: 'smooth' });
                 }
             });
+        });
+
+        // 滚动时添加视差效果
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const bg = document.querySelector('.bg-animation');
+            if (bg) {
+                bg.style.transform = `translateY(${scrolled * 0.3}px)`;
+            }
         });
     </script>
 </body>
