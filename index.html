@@ -337,7 +337,7 @@
         /* 使用流程 */
         .workflow {
             padding: 5rem 1rem;
-            background: linear-gradient(180deg, transparent 0%, rgba(18, 18, 26, 0.5) 100%);
+            background: linear-gradient(180deg, transparent 0%, rgba(18, 18, 26, 0.8) 50%, transparent 100%);
             position: relative;
             z-index: 1;
         }
@@ -345,65 +345,74 @@
         .workflow-steps {
             display: flex;
             flex-direction: column;
-            gap: 3rem;
-            max-width: 900px;
+            gap: 2rem;
+            max-width: 600px;
             margin: 0 auto;
-            align-items: center;
+            position: relative;
+        }
+
+        .workflow-steps::before {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 25px;
+            bottom: 25px;
+            width: 3px;
+            background: linear-gradient(180deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            transform: translateX(-50%);
+            border-radius: 2px;
         }
 
         .step {
             display: flex;
-            gap: 2rem;
-            align-items: flex-start;
+            flex-direction: column;
+            align-items: center;
             position: relative;
-            width: 100%;
-            justify-content: center;
+            z-index: 1;
+            background: linear-gradient(145deg, rgba(18, 18, 26, 0.9), rgba(10, 10, 15, 0.9));
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(0, 245, 212, 0.15);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .step::after {
-            content: '';
-            position: absolute;
-            top: 44px;
-            left: 21px;
-            width: 2px;
-            height: calc(100% + 1rem);
-            background: linear-gradient(180deg, var(--primary-color), transparent);
-        }
-
-        .step:last-child::after {
-            display: none;
+        .step:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+            box-shadow: 0 15px 50px rgba(0, 245, 212, 0.15);
         }
 
         .step-number {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             border-radius: 50%;
-            background: var(--gradient-secondary);
+            background: var(--gradient-primary);
             display: flex;
             justify-content: center;
             align-items: center;
             font-weight: 900;
-            font-size: 1.4rem;
+            font-size: 1.5rem;
             flex-shrink: 0;
-            box-shadow: 0 0 20px rgba(255, 46, 99, 0.4);
+            box-shadow: 0 0 25px rgba(0, 245, 212, 0.5);
             transition: all 0.3s;
+            margin-bottom: 1.25rem;
         }
 
         .step:hover .step-number {
-            transform: scale(1.2);
-            box-shadow: 0 0 30px rgba(255, 46, 99, 0.6);
+            transform: scale(1.15);
+            box-shadow: 0 0 35px rgba(0, 245, 212, 0.7);
         }
 
         .step-content {
-            flex: 1;
-            padding-top: 5px;
+            text-align: center;
+            padding-top: 0;
         }
 
         .step-content h3 {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
-            color: var(--accent-color);
+            color: var(--primary-color);
         }
 
         .step-content p {
